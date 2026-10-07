@@ -1,0 +1,21 @@
+{
+  "carrier_name": "Mutual of Omaha (United of Omaha Life Insurance Company)",
+  "fingerprint": {
+    "must_contain": [
+      "Mutual of Omaha",
+      "United of Omaha Life Insurance Company",
+      "Group Insurance Proposal"
+    ],
+    "any_of": [
+      "Voluntary Critical Illness Insurance",
+      "mutualofomaha.com",
+      "Alternate:"
+    ]
+  },
+  "extraction_notes": "Mutual of Omaha (underwritten by United of Omaha Life Insurance Company) group proposals are multi-product PDFs (this doc includes 9 products: Basic Life/AD&D, Voluntary Life/AD&D, Voluntary STD, LTD, Voluntary Dental, Voluntary Critical Illness, Voluntary Hospital Indemnity, Voluntary Accident, Voluntary Vision), each on its own set of pages labeled with a product header and \"Alternate:\" number.\n\nFor VOLUNTARY CRITICAL ILLNESS specifically (this doc's product #6, pages 16-20, Alternate 7.00):\n- ELIGIBILITY section defines a single Class 1 \"All Eligible Employees\" plus dependents (spouse, children) are eligible if employee is insured.\n- AMOUNT(S) OF INSURANCE table (page 16) gives Min/Max/Increment/Guarantee Issue for three classes: Employee/Member ($10,000-$20,000, $10,000 increments, GI $20,000), Spouse ($10,000 up to 100% of employee amount capped at $20,000, $10,000 increments, GI $20,000), All Children (up to 25% of employee benefit capped at $10,000, automatic/guaranteed, no separate election or premium).\n- BENEFITS - CLASS 1 table (page 17) lists a long benefit schedule of Critical Illness conditions with Initial Benefit % and Reoccurrence Benefit % of Principal Sum, plus \"Additional Benefits\" (Family Care, Pet Care, Lodging, Transportation, Health Screening, Mammogram, Prostate Exam, NCI Cancer Center Eval, Second Opinion) - these are supplemental flat-dollar wellness/ancillary benefits, not part of the core age-banded rate grid, so were not put into rates_by_amount.\n- CRITICAL ILLNESS PREMIUM RATES table (page 19) is the core age-banded rate grid: single column \"Employee/Member Monthly Rates per $1000\" with 7 age bands: <30, 30-39, 40-49, 50-59, 60-69, 70-79, 80-99. Footnote states spouse premium is calculated using the SAME rate table and same employee/member's age (i.e., spouse rate = same per-$1000 rate as employee, based on employee's age) - so I duplicated the same rate grid for Spouse class. Child insurance is automatic with NO separate premium required (rate = 0 / flat, no age bands) - footnote explicitly confirms \"Child insurance is automatic. A separate premium is not required.\"\n- Only ONE rate table (no separate multi-column per-amount grid) - premium is per-$1000 of coverage, not per discrete coverage-amount columns, so rates_by_amount used a single synthetic key \"per_1000\" for each age band rather than multiple coverage-amount columns.\n- Total classes for this product: 3 (Employee/Member, Spouse, All Children). Confirmed nothing skipped: eligibility, amounts-of-insurance table, benefits table, premium rate table, and underwriting guidelines sections all reviewed.\n- Rate Guarantee: 2 years, Rate Guarantee Date 09/01/2028. Participation: 31% minimum, 104 eligible employees, 100% employee-paid.\n- General document quirks: many other products in this proposal use per-tier (Employee Only/+Spouse/+Child/+Family) flat monthly premiums rather than age-banded rates (e.g., Hospital Indemnity, Accident, Vision, Dental) - only Life, AD&D, STD, and Critical Illness use age-banded per-$1000 or per-$10 rate structures in this carrier's documents. Always check which rate structure a given product uses before extraction.",
+  "product_type": "age_banded",
+  "benefit_line": "Voluntary Critical Illness",
+  "created_at": "2026-08-10T02:21:46.875321+00:00",
+  "updated_at": "2026-08-10T02:21:46.875335+00:00",
+  "times_used": 1
+}

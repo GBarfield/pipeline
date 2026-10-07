@@ -1,0 +1,21 @@
+{
+  "carrier_name": "Mutual of Omaha (United of Omaha Life Insurance Company)",
+  "fingerprint": {
+    "must_contain": [
+      "Mutual of Omaha",
+      "United of Omaha Life Insurance Company",
+      "Group Insurance Proposal"
+    ],
+    "any_of": [
+      "Voluntary Hospital Indemnity Insurance",
+      "24317905",
+      "Alliant Insurance Services"
+    ]
+  },
+  "extraction_notes": "This is a multi-product Mutual of Omaha (\"Underwritten by United of Omaha Life Insurance Company\") Group Insurance Proposal PDF. Each product (Basic Life/AD&D, Voluntary Life/AD&D, STD, LTD, Dental, Critical Illness, Hospital Indemnity, Accident, Vision) is presented as its own multi-page section with a consistent header structure: \"Proposal for\", \"Alternate\" (a numeric plan/alternate ID), ELIGIBILITY block (class definitions, min work hours), then a BENEFITS/BENEFIT SUMMARY block, then PARTICIPATION AND COST/PREMIUM SUMMARY block with a rate table, then ADDITIONAL BENEFITS/FEATURES block with narrative provisions (portability, continuation, open enrollment, etc.), and RATE GUARANTEE / RATE GUARANTEE DATE.\n\nFor the VOLUNTARY HOSPITAL INDEMNITY product specifically (this task's target): It's a single Class (Class 1 - All Eligible Employees), single plan design - no multiple plan tiers/options, just one plan. Benefits are listed in tables under headers \"Hospital Admission & Confinement\", \"Mental and Nervous Benefits\", \"Substance Abuse Benefits\", \"Additional Benefits\" - each with an \"Amount\" column and \"Class 1\" sub-header. Rate table (\"HOSPITAL INDEMNITY MONTHLY PREMIUM RATES\") is a single row (Class 1) with 4 columns: Employee/Member, Employee/Member + Spouse, Employee/Member + Child(ren), Employee/Member + Family - map these to employee_only/employee_spouse/employee_children/family respectively. There is only ONE plan/class for this product in this document - confirm no other Hospital Indemnity classes exist elsewhere in the doc (there are not - Basic/Voluntary Life have Class 1 only, Dental has Class1/Class2 High/Low plans, but Hospital Indemnity, Critical Illness, Accident, Vision, STD, LTD each have only Class 1).\n\nGeneral document quirks: No deductibles/OOP max/coinsurance structure applies to these ancillary lines (this isn't a medical plan) - deductible/OOP fields should be left blank/omitted. Rates are monthly premium dollar amounts per tier, not per-$1000 rate bands (except for Life, STD, LTD, Critical Illness which use age-banded per-$1000 or per-$10 rate tables instead of flat tier premiums - watch for this difference by product). Participation assumptions and rate guarantee (typically 2 years, date 09/01/2028 in this doc) appear near the bottom of each product section. Last few pages contain general \"Requirements and Assumptions\" (SIC code, situs state, general disclaimers) applicable to the whole proposal, not tied to any one product - ignore for benefit extraction purposes.",
+  "product_type": "simple_tiered",
+  "benefit_line": "Voluntary Hospital Indemnity",
+  "created_at": "2026-08-10T02:22:19.732152+00:00",
+  "updated_at": "2026-08-10T02:22:19.732166+00:00",
+  "times_used": 1
+}

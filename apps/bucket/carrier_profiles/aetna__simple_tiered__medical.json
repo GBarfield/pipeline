@@ -1,0 +1,21 @@
+{
+  "carrier_name": "Aetna",
+  "fingerprint": {
+    "must_contain": [
+      "Aetna Funding Advantage",
+      "QUOTE #"
+    ],
+    "any_of": [
+      "AFA CPOSII",
+      "Aetna Vision",
+      "New Business AFA Medical Cost Grid",
+      "Aetna Dental Inc."
+    ]
+  },
+  "extraction_notes": "Aetna Small Group New Business Proposal (AFA/self-funded, CPOS II network). Structure: Page 2 is cover/header page with Group Name, Quote #, Effective Date, Broker, Total Eligible, and AFA stop-loss parameters (ISL, ASL, contract type, surplus return, broker fee). Table of Contents lists Medical grid, Dental grid, Census grid, Caveats sections.\n\nMEDICAL section ('New Business AFA Medical Cost Grid - Single Options', starts pg3) spans multiple pages (pg 3-10 in this doc) with ONE continuous table - each row is a distinct medical plan (CPOS II network in this doc; could vary in other docs). This doc had 90 medical plans total - verify full count is captured, do not stop early. Columns: Plan Name/Plan ID, \"Ded/Co-ins, PCP/SPEC RX\" (combined deductible/coinsurance figure + PCP/Specialist copay + Rx tier structure as one text blob - split into separate benefit fields: 'Deductible/Coinsurance' and 'PCP/SPEC RX'), Network, EE/EE+SP/EE+CH/FAM monthly rates (each cell also shows a parenthetical count of enrollees in that tier - ignore that count, it's from client census not a benefit value), Total monthly premium (rate x count - not a rate tier, skip), then Agg(TOTAL)/Stop Loss(TOTAL)/Admin(TOTAL)/TRO(TOTAL) which are self-funding cost components (aggregate premium, stop loss premium, admin fee, terminal reserve option fee) - NOT medical benefit cost-shares, can be omitted or noted as extra fields, not required by schema. No separate per-benefit breakdown (no copay/ER/Rx tier details beyond the Ded/Co-ins/PCP/SPEC RX string) is given elsewhere in doc for medical - so 'benefits' map is limited to 'Deductible/Coinsurance', 'PCP/SPEC RX' (when present), and 'Network'. Deductible individual value = first number before comma in Ded/Co-ins string (e.g. \"$9100,100/0,0/0\" -> deductible_individual=9100). No family deductible or OOP max or out-of-network cost data disclosed in this quote type. No employee_children vs employee_spouse ambiguity: columns are literally EE, EE+SP, EE+CH, FAM.\n\nDENTAL section (pg 11-13, 'New Business Dental Cost Grid') - ignore per instructions (only Medical extracted), but structure noted for future: similar single continuous table, Plan Name/ID, In-Network Benefits (Prev/Basic/Major %, Ded/Max/Ortho), OON Benefits, Network(PPO), EE/EE+SP/EE+CH/FAM/Total rates. ~34 dental plans in this doc (voluntary and employer-paid variants paired).\n\nVISION section (pg15-16, 'Aetna Vision Preferred Small Group Plans') - separate product, ignore. Has 4 plan options (E100/E130/E160/E200) each with 12M/24M frame frequency sub-options, rate table by Self/Self+Spouse/Self+Child/Self+Family.\n\nCENSUS grid (pg17-18) lists individual employees/dependents with DOB, age, zip, tier, plan eligibility - not a benefit table, ignore for extraction purposes.\n\nCaveats/legal boilerplate pages 19-25 - ignore.\n\nQuote ID field is at top of every page ('Quote ID: XXXXXXX'). Effective date range shown as 'Eff Date: MM/DD/YY to MM/DD/YY' - use start date. Group name is 'Group Name: XXXXX' on every page header too.",
+  "product_type": "simple_tiered",
+  "benefit_line": "Medical",
+  "created_at": "2026-09-07T21:53:07.779170+00:00",
+  "updated_at": "2026-09-07T21:53:07.779186+00:00",
+  "times_used": 1
+}

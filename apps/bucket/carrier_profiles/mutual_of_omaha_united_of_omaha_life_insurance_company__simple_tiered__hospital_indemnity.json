@@ -1,0 +1,21 @@
+{
+  "carrier_name": "Mutual of Omaha (United of Omaha Life Insurance Company)",
+  "fingerprint": {
+    "must_contain": [
+      "Mutual of Omaha",
+      "United of Omaha Life Insurance Company",
+      "Alternate"
+    ],
+    "any_of": [
+      "Voluntary Hospital Indemnity Insurance",
+      "Preferred Choice Voluntary Short-Term Disability",
+      "mutualofomaha.com"
+    ]
+  },
+  "extraction_notes": "This is a multi-product Mutual of Omaha \"Group Insurance Proposal\" (doc id shown top-left of each page, e.g. 24317905). Each product/coverage gets its own section starting with a bold header (e.g. \"VOLUNTARY HOSPITAL INDEMNITY INSURANCE\") and an \"Alternate:\" number identifying it within the case. Sections in this doc, in order: Basic Term Life & AD&D, Voluntary Term Life & AD&D, Preferred Choice Voluntary STD, LTD, Voluntary Dental (2 classes: High/Class1, Low/Class2), Voluntary Critical Illness, Voluntary Hospital Indemnity, Voluntary Accident, Voluntary Vision. Only extract the \"Voluntary Hospital Indemnity Insurance\" section per task instructions (1 plan/class in this doc: Class 1 - All Eligible Employees).\n\nHospital Indemnity layout specifics: Eligibility block lists Class Description(s), min work hours (30/wk), age termination (80), child eligibility (to age 26). Benefits are presented in several small tables under headers \"Hospital Admission & Confinement\", \"Mental and Nervous Benefits\", \"Substance Abuse Benefits\", \"Additional Benefits\" - each has a \"Class 1\" column with dollar amounts (per admission/day, with frequency limits noted in row labels or table title notes, e.g. \"limited to a combined total of 2 admissions...\"). Capture the limit text alongside the dollar amount since it's often in the row header/description not a separate column.\n\nRate table for Hospital Indemnity is titled \"HOSPITAL INDEMNITY MONTHLY PREMIUM RATES\" with columns: Employee/Member, Employee/Member + Spouse, Employee/Member + Child(ren), Employee/Member + Family, one row per class (only Class 1 here). No age-banded rates - flat rates per tier. Also shows Participation Assumptions (min participation %, # eligible employees/members, contribution structure) and Rate Guarantee Period/Date directly above/below the rate table.\n\nNo deductible, OOP max, or coinsurance concepts apply to this indemnity product - it's flat-dollar benefit amounts per event/day, so deductible/oop fields should be omitted. No out-of-network figures disclosed (this is indemnity, paid regardless of network) - leave out_of_network empty.\n\nOther products in this same document type (Basic/Voluntary Life & AD&D, STD, LTD, Dental, Critical Illness, Accident, Vision) each have their own distinct layout - Life/AD&D uses age-banded rate-per-$1000 tables; STD/LTD use Class-based benefit summary tables with % and $ max plus a single blended monthly rate or age-banded rate per $10/$100; Dental has per-class deductible/max/coverage-level tables plus tiered (EE/EE+Sp/EE+Ch/EE+Fam) monthly rates with assumed lives; Critical Illness has a large lump-sum benefit table by condition plus age-banded rates; Accident has extensive benefit tables (fractures, dislocations, burns, hospital/surgical, catastrophic) plus flat tiered monthly rates; Vision has an EyeMed-style copay/allowance grid plus flat tiered monthly rates. Each product section ends with its own Participation/Cost Summary and Rate Guarantee info. Document total: 9 distinct coverage products across ~33 pages, plus a final \"Requirements and Assumptions\" admin section (SIC code, situs state, proposal conditions, dental takeover rules) that is not a benefit plan.",
+  "product_type": "simple_tiered",
+  "benefit_line": "Hospital Indemnity",
+  "created_at": "2026-08-10T01:01:56.576182+00:00",
+  "updated_at": "2026-10-01T19:31:40.603280+00:00",
+  "times_used": 8
+}

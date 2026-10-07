@@ -1,0 +1,22 @@
+{
+  "carrier_name": "MetLife",
+  "fingerprint": {
+    "must_contain": [
+      "MetLife",
+      "Group Hospital Indemnity"
+    ],
+    "any_of": [
+      "Metropolitan Life Insurance Company",
+      "GPNP12-AX",
+      "GPNP13-HI",
+      "GPNP16-HI",
+      "Continuation of Insurance with Premium Payment"
+    ]
+  },
+  "extraction_notes": "This MetLife 'Employee Benefits Proposal' document format covers Group Hospital Indemnity Insurance (and may include other voluntary products in other versions - only extract Hospital Indemnity). Structure: Page 1 = cover page with group name, proposal date, effective date. Page 2-3 = 'Proposal Assumptions' table (situs state, SIC code, eligible employees, eligibility rules, takeover, contributions, commissions). Page 4 = 'Plan Design' table with coverage type, benefit amount, underwriting offer, pre-existing condition limitation, complications of pregnancy, routine childbirth, portability details - these map to benefit/plan notes rather than a benefits grid. Page 5 = 'Rate Information' table (rate structure - typically Composite Rates, rate guarantee period, participation requirements) followed by a single 'Proposed Rates Plan' table with 4 rows: Employee Only, Employee + Spouse, Employee + Children, Employee + Spouse/Children - these map to employee_only/employee_spouse/employee_children/family rate tiers. This document only offers ONE Hospital Indemnity plan design (single plan, single rate table) - there are no multiple plan tiers (e.g. low/high plan) in this particular sample, though the schema allows for multiple if a future doc shows a 'Low Plan'/'High Plan' split with two rate columns. Page 6 = 'Covered Benefits' - 'Hospital Benefits' table with Subcategory (Admission Benefit, Confinement Benefit), Benefit Limits, Benefit (Admission, ICU Supplemental Admission, Confinement, ICU Supplemental Confinement), and Plan dollar amount column. No deductibles, OOP max, coinsurance, or per-visit benefit categories like a medical plan - this is a lump-sum indemnity product so the 'benefits' map should capture Admission/Confinement/ICU amounts and key plan design notes (pre-ex limitation, pregnancy/childbirth coverage, portability) instead of typical medical copay fields. Pages 7-11 are state-by-state exclusion/limitation variations (legal boilerplate) - not needed for extraction. Pages 12-14 are general disclaimers/compensation notices - ignore. Total plans in this document: 1 Hospital Indemnity plan with composite (not age-banded) rates across 4 tier levels.",
+  "product_type": "simple_tiered",
+  "benefit_line": "Hospital Indemnity",
+  "created_at": "2026-08-13T21:06:23.775568+00:00",
+  "updated_at": "2026-08-13T21:06:23.775589+00:00",
+  "times_used": 1
+}

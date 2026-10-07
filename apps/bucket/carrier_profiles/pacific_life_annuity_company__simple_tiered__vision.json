@@ -1,0 +1,20 @@
+{
+  "carrier_name": "Pacific Life & Annuity Company",
+  "fingerprint": {
+    "must_contain": [
+      "Pacific Life & Annuity Company"
+    ],
+    "any_of": [
+      "Vision Insurance Powered by EyeMed",
+      "Workforce Benefits Proposal For",
+      "EyeMed Insight",
+      "Proposal ID: P"
+    ]
+  },
+  "extraction_notes": "This is a multi-product Pacific Life \"Workforce Benefits Proposal\" document covering Dental, Vision, Basic Life/AD&D, Voluntary Life/AD&D, STD, Critical Illness, Hospital Indemnity, and Accident products - only the Vision section should be extracted per instructions. Vision section is titled \"Group Vision Insurance - Classic-16\" (page labeled \"Vision Insurance Powered by EyeMed\u00ae - Classic-16\") and is a SINGLE plan/product (only one vision plan offered in this document - confirm count of 1 plan when extracting). Layout: header block gives Effective Date, Rate Guarantee, Situs State. A \"Monthly Premiums\" table gives 4-tier rates (Employee Only, Employee+Spouse, Employee+Children, Employee+Family) - map directly to employee_only/employee_spouse/employee_children/family. An \"Employees Eligible for Coverage / Minimum Participation Requirement / Minimum Hours for Eligibility\" table follows (not needed in schema but useful context). A \"Covered Services / Benefit Frequencies\" table lists Exams, Diabetic Exam Benefit, Frames, Eyeglass Lenses, Contact Lenses frequencies. The detailed cost-share table (In-Network vs Out-of-Network) appears on the NEXT page under \"Vision Insurance Powered by EyeMed\u00ae\" header, broken into EXAMS, EYEGLASSES (Frames, Eyeglass Lenses sub-rows including single vision/bifocal/trifocal/lenticular/standard progressive/premium progressive tiers 1-4, Lens Options: Polycarbonate under 19, Scratch resistant coating), and CONTACT LENSES (elective, non-elective, standard/premium fit+follow up). Both In-Network and Out-of-Network columns should be captured - put In-Network values in 'benefits' and Out-of-Network in 'out_of_network', keyed by matching labels. No deductible/OOP max fields apply to vision - omit those. Additional discount info (40% off extra eyeglasses, 15% off contacts, LASIK discounts, hearing aid discounts via Amplifon) and exclusions appear on subsequent pages but are narrative, not per-plan rate data - not needed in structured extraction. Document also states producer commission (Level 10%) and policy form series (PLAVIPOL22/PLAVICERT22) at the end of the vision section - these are administrative, not required fields. Other products (Dental, Life, STD, Critical Illness, Hospital Indemnity, Accident) appear before/after Vision in this doc but must be ignored when only Vision is requested.",
+  "product_type": "simple_tiered",
+  "benefit_line": "Vision",
+  "created_at": "2026-10-01T19:35:15.419880+00:00",
+  "updated_at": "2026-10-01T19:35:15.419895+00:00",
+  "times_used": 1
+}

@@ -1,0 +1,20 @@
+{
+  "carrier_name": "Pacific Life & Annuity Company",
+  "fingerprint": {
+    "must_contain": [
+      "Pacific Life & Annuity Company"
+    ],
+    "any_of": [
+      "Proposal ID: P1691123005",
+      "Workforce Benefits Proposal",
+      "WB23-7C",
+      "pacificlife.com"
+    ]
+  },
+  "extraction_notes": "This is a multi-product \"Workforce Benefits Proposal\" from Pacific Life & Annuity Company. The document bundles up to 8 products in one PDF: Dental, Vision, Basic Life/AD&D, Voluntary Life/AD&D, Short-Term Disability, Critical Illness, Hospital Indemnity, and Accident. Each product has its own section with its own header stating Effective Date, Rate Guarantee, and Situs State.\n\nFor the Accident product specifically (as seen in this doc, pages 37-44): There is only ONE accident plan in this document, named \"Group Accident Insurance - Medium\" (naming convention is \"Group Accident Insurance - [Tier]\" e.g. Low/Medium/High - watch for multiple tiers in other docs). Monthly premium rates are given in a simple 4-row table: Employee, Employee + Spouse, Employee + Child(ren), Employee + Family (Spouse + Children) - map these to employee_only/employee_spouse/employee_children/family. No embedded/non-embedded deductible or OOP max concepts apply to accident plans (this is a fixed-indemnity product, not major medical) - do not populate deductible/oop_max fields.\n\nPlan Details table gives: Termination Age, Portability, Contribution (voluntary/non-contributory), Coverage Basis (Non-Occupational), Child Maximum Age, Minimum Participation Requirement, Minimum Hours for Eligibility - record these as benefit entries since there's no better field.\n\nThe bulk of Accident plan detail is a long indemnity benefit schedule spanning several pages (here pages 38-42), organized under sub-headers: Catastrophic Benefits, Emergency Care, Fractures, Dislocations, Specific Injuries, Surgery Inpatient/Outpatient, Hospital Admission/Confinement/ICU, Ongoing Care. Each row lists a benefit name and a benefit amount (often with frequency limit like \"1 time per covered accident\" or \"X times per plan year\") - extract each row as its own key in the benefits map, consolidating sub-items (e.g. different fracture locations) into fewer combined entries if the list is very long, to keep output manageable, but try to preserve all distinct benefit categories/headers at minimum.\n\nGeneral Information/Limitations & Exclusions and Producer Commission info follow the benefit tables - not needed in extraction but useful for context (Producer Commission for Accident: Year 1 65%, Year 2 5%, Year 3+ 2.5%; Policy Form Series PLA-ACC-POL23/PLA-ACC-CERT23).\n\nOther products in this document (Dental, Vision, Life/AD&D, STD, Critical Illness, Hospital Indemnity) should be ignored per task instructions when only Accident is requested - but note their presence/page ranges for future multi-product extractions: Dental pg4-8, Vision pg9-12, Basic Life/AD&D pg13-14, Voluntary Life/AD&D pg15-21, STD rates pg22 + STD plan pg23-27, Critical Illness pg28-32, Hospital Indemnity pg33-36, Accident pg37-44, Disclosures pg45.\n\nTotal count confirmation: 1 Accident plan found in this document (named \"Group Accident Insurance - Medium\").",
+  "product_type": "simple_tiered",
+  "benefit_line": "Accident",
+  "created_at": "2026-10-01T19:37:40.181561+00:00",
+  "updated_at": "2026-10-01T19:37:40.181576+00:00",
+  "times_used": 1
+}

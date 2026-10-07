@@ -1,0 +1,20 @@
+{
+  "carrier_name": "Mutual of Omaha (United of Omaha Life Insurance Company)",
+  "fingerprint": {
+    "must_contain": [
+      "Mutual of Omaha",
+      "United of Omaha Life Insurance Company"
+    ],
+    "any_of": [
+      "Preferred Choice Voluntary Short-Term Disability",
+      "mutualofomaha.com",
+      "24317905"
+    ]
+  },
+  "extraction_notes": "This is a multi-product Mutual of Omaha (underwritten by United of Omaha Life Insurance Company) group insurance proposal. Document contains 8 products total: Basic Term Life and AD&D, Voluntary Term Life and AD&D, Preferred Choice Voluntary Short-Term Disability (STD), Long-Term Disability (LTD), Voluntary Dental, Voluntary Critical Illness, Voluntary Hospital Indemnity, Voluntary Accident, and Voluntary Vision (9 listed but STD is the only one to extract per instructions).\n\nSTD LAYOUT: Found on pages labeled \"PREFERRED CHOICE VOLUNTARY SHORT-TERM DISABILITY INSURANCE\". Benefit summary table lists Class 1 (All Eligible Employees, 30+ hrs/week) with Benefit Percentage 60%, Maximum Benefit $1,500/week, elimination periods (7 days accident/sickness), benefit duration 12 weeks, etc. Only ONE coverage class exists for STD (Class 1 - Employee only; no spouse/child tiers for STD in this document).\n\nRATE TABLE: Located in \"PARTICIPATION AND COST SUMMARY (CONT'D)\" section, titled \"COST SUMMARY* / PREFERRED CHOICE VOLUNTARY STD\". Single column table: Age Band -> Monthly Rate (Per $10 of Weekly Benefit). 12 age band rows: <20, 20-24, 25-29, 30-34, 35-39, 40-44, 45-49, 50-54, 55-59, 60-64, 65-69, 70-99. Rate structure is age-banded, per $10 of weekly benefit (not per $1,000 or flat amount) - this is a quirk unique to STD/LTD products from this carrier (vs. per $1,000 for Life/AD&D/CI, or per $100 of payroll for LTD).\n\nOther products in document (for reference, NOT extracted here): Basic Term Life/AD&D (flat $50,000 benefit, non-contributory), Voluntary Term Life/AD&D (age-banded per $1,000, employee/spouse same rate table, separate child rate), LTD (flat rate per $100 of covered payroll, no age bands), Voluntary Dental (2 classes - High/Low plan, flat tiered rates by relationship: EE Only/EE+Spouse/EE+Child/EE+Family), Voluntary Critical Illness (age-banded per $1,000, employee/spouse same table, child automatic no separate premium), Voluntary Hospital Indemnity (flat tiered rates by relationship, single class), Voluntary Accident (flat tiered rates by relationship, single class), Voluntary Vision (flat tiered rates by relationship, single class, EyeMed network).\n\nRate guarantee for STD is 2 years, rate guarantee date 09/01/2028. Participation assumption 34% minimum, 104 eligible employees, 100% employee paid.",
+  "product_type": "age_banded",
+  "benefit_line": "STD",
+  "created_at": "2026-08-10T12:41:04.610571+00:00",
+  "updated_at": "2026-10-01T19:30:59.035729+00:00",
+  "times_used": 4
+}

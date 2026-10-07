@@ -1,0 +1,21 @@
+{
+  "carrier_name": "Mutual of Omaha (United of Omaha Life Insurance Company)",
+  "fingerprint": {
+    "must_contain": [
+      "Mutual of Omaha",
+      "United of Omaha Life Insurance Company"
+    ],
+    "any_of": [
+      "Group Insurance Proposal",
+      "Alternate:",
+      "Preferred Choice Voluntary Short-Term Disability",
+      "Voluntary Dental Insurance"
+    ]
+  },
+  "extraction_notes": "This is a multi-product Mutual of Omaha \"Group Insurance Proposal\" bundling many coverage lines (Basic Life/AD&D, Voluntary Life/AD&D, STD, LTD, Voluntary Dental, Voluntary Critical Illness, Voluntary Hospital Indemnity, Voluntary Accident, Voluntary Vision), each on its own labeled section beginning with a bold section title (e.g. \"VOLUNTARY DENTAL INSURANCE\") and an \"Alternate:\" number. Each product section has its own ELIGIBILITY, BENEFIT SUMMARY, PARTICIPATION AND COST SUMMARY, and ADDITIONAL BENEFITS blocks.\n\nFor DENTAL specifically (section titled \"VOLUNTARY DENTAL INSURANCE\", ~pages 11-15 in this doc):\n- Eligibility defines two classes: Class 1 = employees enrolled in \"High Plan\", Class 2 = employees enrolled in \"Low Plan\". These are two separate plan designs/tiers, NOT one plan - extract both as separate plans.\n- \"BENEFIT SUMMARY - CLASS 1\" and \"BENEFIT SUMMARY - CLASS 2\" tables each list: Policy Year Deductible (Type A waived; Type B/C individual $ amount, family = 3x individual), Policy Year Maximum, Orthodontic Lifetime Maximum, Orthodontic Coverage (usually \"Dependent Children Only\"), and Coverage Levels (Type A/B/C/Orthodontics percentages).\n- COBRA administration note appears per class - not a benefit, just admin note.\n- Rate tables appear later under \"PARTICIPATION AND COST SUMMARY\" as \"COST SUMMARY - HIGH - CLASS 1\" and \"COST SUMMARY - LOW - CLASS 2\", each with rows for Employee Only, Employee+Spouse, Employee+Child(ren), Employee+Family, giving Assumed Lives, Monthly Rate, Monthly Premium, Annual Premium Sub-Total. Use the \"Monthly Rates\" column values as the per-tier premium rates for record_quote_data.\n- Rate Guarantee for dental is 1 Year (shorter than other lines' 2-year guarantee) - note this can differ per product even within the same document.\n- \"COVERED SERVICES - CLASS 1\" and \"COVERED SERVICES - CLASS 2\" pages (separate pages later in doc) list detailed Type A/B/C/Orthodontics covered service lists with frequency limitations - these are supplemental detail, not needed for the standard benefit summary map but useful context (e.g. dentures/bridges/crowns replacement frequency differs: Class 1 = once in 10 years, Class 2 = once in 5 years).\n- No out-of-network specific $ figures disclosed beyond \"cumulative deductible/max across in/out network\"; out-of-network reimbursement basis is 90th percentile R&C.\n- Total plan count for Dental product = 2 (Class 1 High, Class 2 Low). Do not confuse with the other ~8 non-dental products in the same document (Life, AD&D, STD, LTD, Critical Illness, Hospital Indemnity, Accident, Vision) which should be ignored when task specifies \"Dental only\" extraction.\n- Document also has a final \"REQUIREMENTS AND ASSUMPTIONS\" section (last 2 pages) with SIC code, situs state, general proposal conditions, and dental-specific administrative notes (Dental Bid Qualifications, Dental Enrollment, Dental Takeover, Dental Work in Progress) - these are administrative/contractual, not per-benefit cost-share data.",
+  "product_type": "simple_tiered",
+  "benefit_line": "Dental",
+  "created_at": "2026-08-10T00:22:57.926187+00:00",
+  "updated_at": "2026-10-01T19:31:14.525868+00:00",
+  "times_used": 9
+}

@@ -1,0 +1,21 @@
+{
+  "carrier_name": "Aetna",
+  "fingerprint": {
+    "must_contain": [
+      "Aetna Vision",
+      "EyeMed Vision Care"
+    ],
+    "any_of": [
+      "Aetna Funding Advantage",
+      "AFA CPOSII",
+      "3366911-01-01",
+      "Small Group new business proposal"
+    ]
+  },
+  "extraction_notes": "This is an Aetna Small Group new business proposal (multi-product: Medical AFA self-funded, Dental, Vision, Census). For the Vision product specifically, look for the page titled 'Aetna Vision(SM) Preferred Small Group Plans' - in this doc it was page 15-16.\n\nLayout: A single table lists 4 plan tiers side by side as columns: E100, E130, E160, E200 (naming reflects frame allowance dollar amount). Each plan tier has TWO rate options based on frame replacement frequency: 12M (12-month) and 24M (24-month) - these should be extracted as separate plans (8 total plans for this document: 4 tiers x 2 frame frequencies). Monthly rates for each are given for 4 enrollment tiers: Self, Self & Spouse, Self & Child(ren), Self & Family - map these to employee_only, employee_spouse, employee_children, family respectively.\n\nBelow the rate grid is a single 'In-network benefit features' table with rows = benefit categories (Exam, Frame, Standard plastic lenses, Standard progressive lenses, Premium progressive lenses [3 tiers], Lens options [UV treatment, Tint, Standard plastic scratch coating, Standard polycarbonate adult, Standard polycarbonate kids under 19, Standard anti-reflective coating, Premium anti-reflective coating (3 tiers), Photochromic/transitions plastic, Polarized/other lens add-ons], Contact lenses [Conventional, Disposable, Medically necessary]) and columns = E100/E130/E160/E200 (this benefit detail does NOT vary by 12M/24M frame option - it's identical for both, since 12M/24M only affects frame frequency and rate, not the copay structure). So when building 8 plan entries, duplicate the same benefits object for the two frame-frequency variants within the same tier (E100-12M and E100-24M share identical benefits, etc).\n\nAll vision plans have no deductible and no waiting periods (stated in fine print). No OOP max or deductible values disclosed - leave those fields blank/omit. Out-of-network coverage exists but rates not itemized in this doc (noted only that OON is included but 'savings vary').\n\nOther products in this same document type to IGNORE when extracting vision only: 'NB AFA Medical Cost Grid' (self-funded CPOS II medical plans with stop loss financial columns), 'New Business Dental Cost Grid' (PPO dental plans), and 'New Business Census Grid' (employee roster - not a plan).\n\nConfirm count: exactly 8 vision plan/rate entries in this document (4 allowance tiers x 2 frame frequency options).",
+  "product_type": "simple_tiered",
+  "benefit_line": "Vision",
+  "created_at": "2026-09-07T21:54:54.329802+00:00",
+  "updated_at": "2026-09-07T21:54:54.329818+00:00",
+  "times_used": 1
+}

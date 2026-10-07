@@ -1,0 +1,22 @@
+{
+  "carrier_name": "Trustmark (Star Marketing and Administration, Inc. / Trustmark Life Insurance Company) - Small Business Benefits",
+  "fingerprint": {
+    "must_contain": [
+      "Trustmark Small Business Benefits",
+      "Star Marketing and Administration"
+    ],
+    "any_of": [
+      "TrustmarkSB.com",
+      "Trustmark Healthy Choices",
+      "Trustmark HealthyEdge",
+      "Annual Aggregate Attachment Point",
+      "Runout Period"
+    ]
+  },
+  "extraction_notes": "This is a Trustmark Small Business Benefits self-funded stop-loss proposal (level-funded medical plan quote), administered by Star Marketing and Administration, Inc. Document structure:\n- Page 1: Cover page with group name, broker, sales contact, effective date.\n- Page 2-3: \"Multi-Quote Summary\" pages showing a side-by-side grid of ALL plans (4 columns per page) with rows for Deductible, Deductible Type, Benefit Period, Coinsurance, OOP Limit, Teladoc, Physician/Specialist Office Visit, Urgent Care, ER, Therapies, Alternative Medicine, Outpatient Diagnostic X-Ray & Lab, Outpatient Advanced Imaging, Inpatient Admission/Outpatient Surgery, Prescription Drug Benefit (4-tier copay format + Rx deductible), Maternity, plus stop-loss specific fields (Specific Deductible, Annual Aggregate Attachment Point, Runout Period, Surplus Option, Surplus Determination Period), and Composite Monthly Costs by tier (EE/ES/EC/FF a.k.a Employee/Employee+Spouse/Employee+Child(ren)/Full Family) and Coverage Cost Totals. In this doc there were 2 summary pages: page 2 had 4 \"Trustmark Healthy Choices\" plans (Plans 1-4), page 3 had 4 \"Trustmark HealthyEdge PPO\" plans (Plans 5-8) - total 8 medical plans.\n- After the summary pages, each plan gets its own detailed multi-page section (typically 3-4 pages per plan): (1) a \"Plan N\" highlight page repeating Health Plan Design table (Deductible, Coinsurance, OOP Limit, Physician/Specialist Office Visit, Prescription Drug Benefit, Provider Networks) plus stop-loss administrative details (Specific Deductible, Contract Period, Runout Period, Annual/Minimum Aggregate Attachment Point, Surplus Option/Determination Period, Minimum Value, Provider Payment methodology) and a Health Plan Costs table by tier; (2) a Dental/Life coverage page (all zeros in this doc - no dental/life quoted); (3) a \"Breakdown of Health Plan Costs\" page showing Stop-Loss Premium/Administrative Fees/Claim Prefunding split by tier; (4) an employee-level census/roster page listing each named employee with their plan, coverage tier (EE/ES/EC/FF), EE Cost, Dep Cost, Dental/Life columns (all $0 here), and Total Monthly Cost, followed by a totals row and repeated on a following page with just the total.\n- \"Healthy Choices\" plans use reference-based (Medicare %) pricing and show 'Provider Networks: Not Applicable'; \"HealthyEdge PPO\" plans show a real network (here: Aetna Signature Administrators) and include in-network/out-of-network deductible, coinsurance, and OOP max figures (format: 'in-network/out-of-network', e.g. '$1,000/$3,000').\n- Rx Benefit format is 4 numbers: generic/brand-formulary/brand-nonformulary/specialty copays, followed by separate Rx deductible amount, e.g. '$20/$75/$105/$0*, $250 deductible drug card'.\n- Family deductible/OOP max are stated as 'two times individual' - not explicit dollar figures; I computed family = 2x individual.\n- This document only contained the Medical product (no separate Dental/Life products with actual rates - the Dental/Life sections present were all $0/blank placeholders). Total plan count confirmed: 8 medical plans (4 Healthy Choices + 4 HealthyEdge PPO), each with EE/ES/EC/FF composite rate tiers only (no true age-banded or per-employee-varying premium; census page just multiplies composite rate by each employee's tier).\n- Quote name, SIC code, ZIP, state, number of employees appear in the header of every page - useful for confirming which quote/section you're in.",
+  "product_type": "simple_tiered",
+  "benefit_line": "Medical",
+  "created_at": "2026-09-08T01:47:10.344969+00:00",
+  "updated_at": "2026-09-08T01:48:44.067769+00:00",
+  "times_used": 2
+}

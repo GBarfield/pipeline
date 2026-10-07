@@ -1,0 +1,21 @@
+{
+  "carrier_name": "UnitedHealthcare",
+  "fingerprint": {
+    "must_contain": [
+      "UnitedHealthcare",
+      "UHC Sales Rep"
+    ],
+    "any_of": [
+      "Core Rewards",
+      "Medical Plan Code - RX Plan Code",
+      "Medical Age-Banded Rates",
+      "CHOICE PLUS"
+    ]
+  },
+  "extraction_notes": "UHC group medical proposal (this doc had only a Medical product; no other lines present). Layout: Page 1 Employer Profile, Page 2 Employee Census, Pages 3-5 'Medical Plan Details/Premium' tables showing 5 plans per page side-by-side (this doc had 15 total medical plans across 3 pages: EOW2, EOWI, EOWZ, EOWY, EOWR on pg3; EOWH, EOWU, EOWG, EOWW, EOWV on pg4; EOW3, EOWF, EOWE, EOWS, EOWT on pg5) each with Plan Code/RX Plan Code, Rewards Level, Plan Name, Package Code(s), Product Type, Metallic Level, In-Network/Out-of-Network deductibles, coinsurance, copays, RX tiers, and 'See Age Banded Rates' placeholders for Employee Only/Spouse/Child(ren)/Family premium tiers (only Employee Only tier had actual enrollees in this case - 0 for others). Pages 6-13 contain 'Medical Age-Banded Rates' - one rate table per plan (2 plans per page), each table has plan name/code/rx code/package(s)/total monthly cost header, then age band rows printed in a compact multi-column layout (7 columns of Age|Rate pairs per row-block) covering ages <15,15-63 individually, then 64+. Only a single 'Employee Only' rate column exists per plan (no separate EE/Spouse/Child/Family age-banded rate columns shown - census in this group was all single employees). Pages 14-16 are 'Medical Census and Rate Details' cross-tab showing each census member's premium for each of the 5 plans per page (redundant with age-banded tables, useful for verification). Page 17 is disclaimers only. IMPORTANT: total plan count = 15 distinct medical plans (each identified by unique Plan Code e.g. EOW2, EOWI, EOWZ, EOWY, EOWR, EOWH, EOWU, EOWG, EOWW, EOWV, EOW3, EOWF, EOWE, EOWS, EOWT), each is its own 'coverage class' entry in extraction (treated as separate plan/product variant rather than family tiers, since only Employee Only tier had members and other tiers all showed 0 enrolled and just said 'See Age Banded Rates' with no numeric rates ever printed for Spouse/Child/Family). If future docs have nonzero counts for Spouse/Child(ren)/Family, expect additional age-banded rate tables per plan for those tiers using the same layout. Metallic levels seen: Silver, Gold, Platinum - each plan tagged with its metallic tier and 'Core Rewards' UHC Rewards Level. No flat-rate coverage classes present - all medical rating is age-banded by single-year age bands from <15 through 63, plus a 64+ open-ended top band.",
+  "product_type": "age_banded",
+  "benefit_line": "Medical",
+  "created_at": "2026-09-08T01:27:34.673472+00:00",
+  "updated_at": "2026-09-08T01:27:34.673486+00:00",
+  "times_used": 1
+}

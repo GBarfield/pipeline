@@ -1,0 +1,21 @@
+{
+  "carrier_name": "MetLife",
+  "fingerprint": {
+    "must_contain": [
+      "Metropolitan Life Insurance Company",
+      "Group Accident Insurance"
+    ],
+    "any_of": [
+      "MetLife Accident Insurance can complement existing medical coverage",
+      "Continued Insurance with Premium Payment",
+      "GPNP12-AX",
+      "L0922025816"
+    ]
+  },
+  "extraction_notes": "This is a MetLife \"Employee Benefits Proposal\" document that bundles multiple voluntary products (this instance only contained Accident, but other instances may include Critical Illness, Hospital Indemnity, etc. - only extract the Accident product per instructions). Layout details for the Accident product:\n\n- Cover page gives group name (employer), proposal date, and Proposed Customer Effective Date (use as effective_date).\n- \"Proposal Assumptions\" table (page 2-3) gives Situs State, SIC code, Number of Eligible Employees, Employee Eligibility rules, Takeover provisions, Contributions (100% Employee Paid = voluntary), and Commissions - these are informational, not per-plan benefit data.\n- \"Plan Design\" table (page 4) describes Coverage Type (24hr on/off job), Benefit Amount/Underwriting (Guaranteed Issue, single plan of coverage - meaning there is typically only ONE plan/rate tier offered, not multiple plan options), Pre-existing Condition Limitation, Portability provision.\n- \"Rate Information\" table gives Rate Structure (Composite Rates - i.e., rates do NOT vary by age/state, just by tier), Rate Guarantee period, Participation Requirements.\n- \"Proposed Rates Plan\" table (page 5) is the actual rate grid: rows are enrollment tiers (Employee Only, Employee + Spouse, Employee + Children, Employee + Spouse/Children) with a single \"Monthly\" column - map these directly to employee_only/employee_spouse/employee_children/family. There is only ONE plan design in this document (single composite-rated plan), so only one plan entry is needed under \"plans\" array.\n- \"Covered Benefits\" table (pages 6-9) is the detailed benefit schedule, organized by Category > Subcategory > Benefit line item > flat dollar amount (or % for chip fracture/partial dislocation/skin graft). Categories seen: Accidental Injury Benefits (Fracture Closed/Open, Dislocation Closed/Open, Burn, Concussion, Coma, Laceration), Accident-Medical Treatment and Services Benefits (Ambulance, Emergency Care, Non-Emergency Initial Care, Medical Testing, Physician Follow-Up, Therapy Services, Prosthetic Device, Medical Appliance + limit, Blood/Plasma/Platelets, Surgery Benefit, Exploratory Surgery, Other Outpatient Surgery), Accident-Hospital Benefits (Admission, Confinement incl. ICU, Rehab), Other Benefits Category (Health Screening Benefit). Extract every line item as its own benefit key with the flat dollar (or %) amount as the value - there is no deductible/OOP/coinsurance structure since this is a fixed-indemnity accident product (deductible_individual/family, oop_max fields, out_of_network should be omitted/left blank).\n- No age-banded rates, no per-state rate variation shown (composite rate applies across the group per the situs state, with note that final rates may vary due to rounding).\n- Pages 11-16 contain lengthy state-by-state exclusion/limitation variation language - ignore for extraction, not benefit amounts.\n- Pages 17-19 are general disclaimers/compensation notices - ignore.\n- Total plans in this document: 1 Accident plan (single composite rate plan with 4 rate tiers). If a future document shows multiple accident \"plan options\" (e.g., Low/High plan), expect multiple rate columns in the Proposed Rates table and a parallel \"Plan\" column with multiple values in the Covered Benefits table - extract each as a separate plan entry with its own benefits map.",
+  "product_type": "simple_tiered",
+  "benefit_line": "Accident",
+  "created_at": "2026-09-08T02:15:41.425911+00:00",
+  "updated_at": "2026-09-08T02:15:41.425927+00:00",
+  "times_used": 1
+}

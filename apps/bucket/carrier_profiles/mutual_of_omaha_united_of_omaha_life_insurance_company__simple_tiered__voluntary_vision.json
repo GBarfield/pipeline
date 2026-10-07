@@ -1,0 +1,22 @@
+{
+  "carrier_name": "Mutual of Omaha (United of Omaha Life Insurance Company)",
+  "fingerprint": {
+    "must_contain": [
+      "Mutual of Omaha",
+      "United of Omaha Life Insurance Company",
+      "Group Insurance Proposal"
+    ],
+    "any_of": [
+      "Alliant Insurance Services",
+      "24317905",
+      "Preferred Choice Voluntary Short-Term Disability",
+      "mutualofomaha.com"
+    ]
+  },
+  "extraction_notes": "This is a multi-product Mutual of Omaha \"Group Insurance Proposal\" document (underwritten by United of Omaha Life Insurance Company). It typically bundles many products in one PDF, each with its own section header (e.g. BASIC TERM LIFE AND AD&D, VOLUNTARY TERM LIFE AND AD&D, PREFERRED CHOICE VOLUNTARY SHORT-TERM DISABILITY, LONG-TERM DISABILITY, VOLUNTARY DENTAL, VOLUNTARY CRITICAL ILLNESS, VOLUNTARY HOSPITAL INDEMNITY, VOLUNTARY ACCIDENT, VOLUNTARY VISION). Each product section has a similar layout: 'Proposal for'/'Alternate' number header, ELIGIBILITY block (class definitions, min work hours, child eligibility ages), BENEFIT SUMMARY block, then PARTICIPATION AND COST SUMMARY / PARTICIPATION AND PREMIUM block with a rate table, then ADDITIONAL BENEFITS/FEATURES block with plan provisions (portability, continuation, open enrollment, etc.), and RATE GUARANTEE / RATE GUARANTEE DATE.\n\nFor the VOLUNTARY VISION product specifically (this document's only vision product, single Class 1 plan, no multiple plan options): the BENEFIT SUMMARY is a table titled 'SERVICES & MATERIALS' with three columns: benefit name, 'In-Network Cost', 'Out-of-Network Reimbursement'. Rows cover Exam, Exam Options (Retinal Imaging, Contact Lens Fit & Follow-up), Frames, Standard Plastic Lenses (Single Vision/Bifocal/Trifocal/Lenticular), Contact Lenses (Conventional/Disposable/Medically Necessary), Lens Options (Progressive Lenses tiers, Polycarbonate, UV, Tint, Scratch Coating, Anti-Reflective tiers, Photochromic, Other Add-ons), and a 'Benefit Frequency' table (Examination/Lenses/Frame, all typically 'Once every 12 months'). This spans 2 pages. There is only ONE vision plan/class in this document (Class 1) - do not expect multiple vision plan variants unless the eligibility section lists more than one class.\n\nRate table for Vision is under 'PARTICIPATION AND PREMIUM' -> 'VISION PREMIUM RATES CLASS 1' with columns: Assumed Lives, Monthly Rates, Monthly Premium, Annual Premium, broken out by tier: Employee Only, Employee + Spouse, Employee + Child(ren), Employee + Family, plus a Total row. Use the 'Monthly Rates' column values as the per-tier premium rates for record_quote_data (these are true premium rates, not just assumed-life totals). Deductibles/OOP max fields are not applicable/disclosed for vision - leave those fields blank.\n\nOther products in this doc (Basic Life/AD&D, Voluntary Life/AD&D, STD, LTD, Dental (2 classes: High/Class1, Low/Class2), Critical Illness, Hospital Indemnity, Accident) should be ignored per user instruction when only Vision is requested. Total plans in doc across all products: 1 Basic Life, 1 Voluntary Life, 1 STD, 1 LTD, 2 Dental classes, 1 Critical Illness, 1 Hospital Indemnity, 1 Accident, 1 Vision = ~10 plan/class entries total, but only the 1 Vision plan should be extracted per this task's instructions. Group name and effective date (09/01/2026) appear at the top of each product section under 'Proposal for' and in the intro paragraph. Document ID/quote_id appears as a number (e.g. 24317905) in the header/footer of every page.",
+  "product_type": "simple_tiered",
+  "benefit_line": "Voluntary Vision",
+  "created_at": "2026-08-10T02:23:24.631269+00:00",
+  "updated_at": "2026-08-10T02:23:24.631285+00:00",
+  "times_used": 1
+}

@@ -1,0 +1,22 @@
+{
+  "carrier_name": "MetLife",
+  "fingerprint": {
+    "must_contain": [
+      "MetLife",
+      "Group Critical Illness"
+    ],
+    "any_of": [
+      "Metropolitan Life Insurance Company",
+      "Continuation of Insurance with Premium Payment",
+      "GPNP07-CI",
+      "GPNP09-CI",
+      "Total Benefit Amount (TBA)"
+    ]
+  },
+  "extraction_notes": "MetLife Group Critical Illness proposal, Attained Age rate structure. Layout: Cover page has group name/dates. Rate tables appear on pages 6-7 titled \"Premium Structure \u2013 Low Plan\" and \"Premium Structure \u2013 High Plan\" - these are TWO separate products/plan tiers (low benefit choice vs high benefit choice, corresponding to the $10,000 and $20,000 GI benefit amounts mentioned in Plan Design section on page 4). Each plan table has identical structure: 4 coverage-class columns (Employee Only, Employee + Spouse, Employee + Children, Employee + Spouse/Children) and 14 attained-age row bands: <25, 25-29, 30-34, 35-39, 40-44, 45-49, 50-54, 55-59, 60-64, 65-69, 70-74, 75-79, 80-84, 85-99. Rates are printed as \"per $1,000 of coverage\" - actual premium = rate x (benefit amount/1000). In this document, the Low Plan and High Plan tables had IDENTICAL rate values (both used same per-$1000 rate schedule) - still extract both as separate products since they are distinct plan designs/benefit tiers, do not merge. Note: rate table columns are NOT dollar coverage amounts but rather relationship/class tiers - store rate as key \"per_1000\" in rates_by_amount since actual amount depends on elected benefit ($10k or $20k for employee, 50% of that for spouse/child). Plan design details: GI benefit choice of $10,000 or $20,000 for employee; spouse gets 50% of employee amount, child(ren) get 50% of employee amount; Total Benefit Amount = 300% of initial benefit; covered conditions include Coronary Artery Bypass Graft, Full Benefit Cancer, Partial Benefit Cancer, Heart Attack, Kidney Failure, Major Organ Transplant, Stroke (with initial/recurrence benefit percentages on page 5 - not part of rate grid). Total products in doc: Critical Illness (2 plan tiers: Low, High) - other products (e.g. life, disability) may appear in other MetLife bundles but were not present here. Each plan tier has 4 classes, no separate 'Child' only class - children always bundled into 'Employee + Children' or 'Employee + Spouse/Children' class labels. No flat-rate classes - all age-banded.",
+  "product_type": "age_banded",
+  "benefit_line": "Critical Illness",
+  "created_at": "2026-09-08T02:16:32.168014+00:00",
+  "updated_at": "2026-09-08T02:16:32.168030+00:00",
+  "times_used": 1
+}

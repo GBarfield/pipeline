@@ -1,0 +1,21 @@
+{
+  "carrier_name": "Mutual of Omaha (United of Omaha Life Insurance Company)",
+  "fingerprint": {
+    "must_contain": [
+      "Mutual of Omaha",
+      "United of Omaha Life Insurance Company",
+      "24317905"
+    ],
+    "any_of": [
+      "Group Insurance Proposal",
+      "Preferred Choice Voluntary Short-Term Disability",
+      "mutualofomaha.com"
+    ]
+  },
+  "extraction_notes": "This is a multi-product Mutual of Omaha \"Group Insurance Proposal\" document, each product on its own set of pages with a header banner naming the product (e.g., \"VOLUNTARY DENTAL INSURANCE\"). Products seen in this doc: Basic Term Life/AD&D, Voluntary Term Life/AD&D, Preferred Choice Voluntary STD, LTD, Voluntary Dental, Voluntary Critical Illness, Voluntary Hospital Indemnity, Voluntary Accident, Voluntary Vision (9 products total). For Voluntary Dental specifically: it defines two classes/plans - \"Class 1: All Eligible Employees enrolled in High Plan\" and \"Class 2: ...enrolled in Low Plan\" - these are the two plans to extract, each with its own complete Benefit Summary section (labeled \"BENEFIT SUMMARY - CLASS 1\" and \"BENEFIT SUMMARY - CLASS 2\") containing Policy Year Deductible (Type A waived; Type B,C individual $50/family 3x individual), Policy Year Maximum, Orthodontic Lifetime Maximum, Orthodontic Coverage (dependent children only), and Coverage Levels (Type A/B/C/Orthodontics percentages). Rate table appears later under \"PARTICIPATION AND COST SUMMARY\" with separate \"COST SUMMARY - HIGH - CLASS 1\" and \"COST SUMMARY - LOW - CLASS 2\" tables, each giving Assumed Lives, Monthly Rates, Monthly Premium, Annual Premium Sub-Total across 4 tiers (Employee Only, Employee+Spouse, Employee+Child(ren), Employee+Family) - use the \"Monthly Rates\" column as the per-tier premium. A \"Total (All Classes)\" row sums both classes - do not treat as a third plan. Covered Services detail (Type A/B/C/Orthodontics service lists) appear on subsequent pages, separately labeled \"COVERED SERVICES - CLASS 1\" and \"COVERED SERVICES - CLASS 2\" - these mirror each other except Class 1 major services replacement is \"once in 10 years\" vs Class 2 \"once in 5 years\". No separate in-network/out-of-network cost distinction is given for dental (deductible/max are cumulative across both). Rate guarantee for dental is 1 year (differs from other products' 2-year guarantee) with rate guarantee date 09/01/2027. Watch for other products in future docs from this carrier - each has similar structured sections: ELIGIBILITY, BENEFIT SUMMARY, PARTICIPATION AND COST SUMMARY, ADDITIONAL BENEFITS/FEATURES - useful pattern for extracting other product types too.",
+  "product_type": "simple_tiered",
+  "benefit_line": "Voluntary Dental",
+  "created_at": "2026-08-10T02:21:19.672464+00:00",
+  "updated_at": "2026-08-10T02:21:19.672480+00:00",
+  "times_used": 1
+}

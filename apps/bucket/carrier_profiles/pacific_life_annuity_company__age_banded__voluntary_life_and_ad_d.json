@@ -1,0 +1,20 @@
+{
+  "carrier_name": "Pacific Life & Annuity Company",
+  "fingerprint": {
+    "must_contain": [
+      "Pacific Life & Annuity Company"
+    ],
+    "any_of": [
+      "Proposal ID: P1691123005",
+      "PacificLife.com/ratings",
+      "WB23-7C",
+      "Workforce Benefits Proposal For"
+    ]
+  },
+  "extraction_notes": "Pacific Life \"Workforce Benefits Proposal\" multi-product document. Table of contents on page 3 lists all products with page numbers (Dental, Vision, Basic Life/AD&D, Voluntary Life/AD&D, STD, Critical Illness, Hospital Indemnity, Accident). For the Voluntary Term Life and AD&D product (titled \"Group Voluntary Term Life Insurance and AD&D\" / \"Group Voluntary Term Life and AD&D Insurance\"), the rate summary table appears on its own page (here page 15) titled \"Rate Summary\" with a single combined table listing age bands in far-left column (\"Life Coverage\") and two columns: \"Employee Life Rates\" and \"Spouse Life Rates\" - in this document these two columns were IDENTICAL at every age band, but still extract both columns separately as they are headed independently. 13 age bands total: <25, 25-29, 30-34, 35-39, 40-44, 45-49, 50-54, 55-59, 60-64, 65-69, 70-74, 75-79, 80+. Rates are per $1,000 of coverage, monthly. Below the main age-banded table are two small flat-rate tables: \"Child Life Coverage\" (single flat rate per $1,000, labeled 'Up to age 26') and \"AD&D\" (three flat rows: Employee, Spouse, Child - each a flat rate per $1,000 of Life Insurance, NOT age-banded). Plan design details (benefit increments, guaranteed issue, max benefit, employee contribution %, age reduction schedule) are on subsequent pages per class: Employee class on page 16 (\"Voluntary Life Plan - Employee Coverage\": increments of $10,000, GI $80,000, max benefit <5X or $250,000, min 45% participation), Spouse class on page 17 (\"Voluntary Life and AD&D Plan - Spouse Coverage\": increments of $5,000, GI $20,000, max $100,000, limited to 50% of employee amount), Child class on page 18 (\"Voluntary Life and AD&D Plan - Child Coverage\": flat $10,000 benefit, live birth to age 26). AD&D plan features (seat belt, air bag, child care/tuition, home alteration, additional features list) appear on page 17 under \"Voluntary AD&D Plan - Employee Coverage\" - these are feature riders, not separate rate classes. Total coverage classes to extract for this product: Employee (age-banded, life), Spouse (age-banded, life), Child (flat, life), plus AD&D flat rates for Employee/Spouse/Child (3 more flat entries) = 6 total class entries. Document also contains Basic (non-voluntary) Term Life and AD&D as a SEPARATE flat-rate product (not age-banded, $20,000 flat benefit) - do not confuse with the Voluntary product. Other non-life products (Dental, Vision, STD, Critical Illness, Hospital Indemnity, Accident) appear elsewhere in document with their own distinct rate table formats (e.g., Critical Illness uses attained-age bands with 4 relationship-tier columns; STD uses age-banded per-$10-of-weekly-benefit rates) - ignore these if only extracting Voluntary Life/AD&D.",
+  "product_type": "age_banded",
+  "benefit_line": "Voluntary Life and AD&D",
+  "created_at": "2026-10-01T19:35:59.721610+00:00",
+  "updated_at": "2026-10-01T19:35:59.721626+00:00",
+  "times_used": 1
+}

@@ -1,22 +1,25 @@
 node_modules/
 dist/
 .env
-apps/api/uploads/
-apps/bucket/__pycache__/
-apps/bucket/**/__pycache__/
-apps/bucket/uploads/
-apps/bucket/output/
-apps/api/logs/
-
-# Backups and secrets
-*.bak
 .env.*
 !.env.example
-
-# Python caches / local data
+*.bak
+*.log
 __pycache__/
+New Text Document.txt
+apps/api/uploads/
+apps/api/logs/
 apps/bucket/uploads/
 apps/bucket/output/
 
-# Stray files
-New Text Document.txt
+# Local scratch files, test data, credentials, DB dumps
+cookies.txt
+/apps/*/*.sql
+/apps/*/*.csv
+/apps/*/*.txt
+/apps/*/*.json
+!/apps/*/package.json
+!/apps/*/tsconfig*.json
+!/apps/*/.oxlintrc.json
+/apps/api/package-lock.json
+*.xlsx

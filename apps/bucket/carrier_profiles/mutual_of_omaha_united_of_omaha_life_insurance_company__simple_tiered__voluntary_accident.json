@@ -1,0 +1,21 @@
+{
+  "carrier_name": "Mutual of Omaha (United of Omaha Life Insurance Company)",
+  "fingerprint": {
+    "must_contain": [
+      "Mutual of Omaha",
+      "United of Omaha Life Insurance Company",
+      "Group Insurance Proposal"
+    ],
+    "any_of": [
+      "24317905",
+      "Preferred Choice Voluntary Short-Term Disability",
+      "Alternate:"
+    ]
+  },
+  "extraction_notes": "This is a multi-product Mutual of Omaha (underwritten by United of Omaha Life Insurance Co.) Group Insurance Proposal document, structured as one section per product (each starting with a bold product title header and 'Proposal for:'/'Alternate:' line). Products seen in this doc: Basic Term Life and AD&D, Voluntary Term Life and AD&D, Preferred Choice Voluntary Short-Term Disability, Long-Term Disability, Voluntary Dental (2 classes), Voluntary Critical Illness, Voluntary Hospital Indemnity, Voluntary Accident, Voluntary Vision. Only extract the product(s) requested by the user task - other products should be ignored per instructions even though they're present.\n\nFor VOLUNTARY ACCIDENT specifically (the product extracted here): Located under header 'VOLUNTARY ACCIDENT INSURANCE'. Has ELIGIBILITY section (class def, min hours, termination age), then ACCIDENT INSURANCE section (coverage tiers: EE only/EE+Spouse/EE+Child/EE+Family - no true 'deductible' or 'oop_max' concept, this is a fixed-indemnity accident plan not a medical plan), then ACCIDENT BENEFITS broken into subsections: Initial Care & Emergency Benefits (ER, urgent care, office visit, ambulance), Specified Injury Benefits (large fracture/dislocation tables by bone/joint with Open vs Closed Reduction $ amounts, plus lacerations/burns/dental), Hospital/Surgical/Diagnostic Benefits, Follow-Up Care Benefits, Additional Benefits (transportation/lodging/childcare/health screening/child sports booster), and Catastrophic Benefits (Accidental Death principal sums by relationship, Dismemberment & Paralysis percentages, Reasonable Modifications, Coma). Only Class 1 present (single class - 'All Eligible Employees'). Rate table titled 'ACCIDENT MONTHLY PREMIUM RATES' has 4 columns: Employee/Member, Employee/Member+Spouse, Employee/Member+Child(ren), Employee/Member+Family - flat rates, not age-banded. Participation assumptions (min 31%, 117 eligible employees, 100% employee paid) appear just above the rate table. Rate guarantee 2 years, rate guarantee date 09/01/2028. No deductible/OOP max/actuarial value fields apply since this is indemnity-style coverage - leave those blank. Given the huge number of specified-injury line items (dozens of fractures/dislocations), it's acceptable to summarize with representative examples plus category totals rather than list every single bone, but capture all major distinct benefit categories (initial care, ambulance, fractures, dislocations, lacerations, burns, dental, hospital, surgical, diagnostic, follow-up, additional, catastrophic/AD&D, dismemberment) so nothing structurally is missed.\n\nGeneral document layout notes for other products (for future reference): each product page starts with all-caps product name banner, 'Proposal for'/'Alternate' number, then ELIGIBILITY box, then BENEFIT SUMMARY / plan-specific benefit tables (format varies a lot by product - life uses benefit amount tables, disability uses % tables, dental uses per-class deductible/coinsurance tables with two classes High/Low, critical illness uses lump-sum % tables, hospital indemnity uses per diem tables, vision uses copay/allowance tables), followed by PARTICIPATION AND COST/PREMIUM SUMMARY with monthly rate tables (either age-banded per $1,000/per $10, or flat tier rates: EE Only/EE+Spouse/EE+Child(ren)/Family), then ADDITIONAL BENEFITS/FEATURES boilerplate (portability, continuation, FMLA/USERRA, open enrollment). Document ends with a general REQUIREMENTS AND ASSUMPTIONS section (SIC code, situs state, proposal conditions) that applies to the whole proposal, not any one product. Total of 9 distinct products in this specific document instance.",
+  "product_type": "simple_tiered",
+  "benefit_line": "Voluntary Accident",
+  "created_at": "2026-08-10T02:22:55.918486+00:00",
+  "updated_at": "2026-08-10T02:22:55.918504+00:00",
+  "times_used": 1
+}

@@ -164,29 +164,18 @@ export interface QuoteRecord {
    */
   supplement?: ManualQuoteData | null;
   /**
-   * Allow-list of which plan/product options (by zero-based index into
-   * rawData.plans[] for simple_tiered, or rawData.products[] for age_banded/
-   * flat_rate_per_unit) actually appear in the comparison. Exists because a single
-   * carrier document can list a couple dozen plan variations (a 20-option medical
-   * proposal is the real case this was built for) and the agent usually only wants a
-   * handful of them in the deliverable - see the "Plans Shown" picker in
-   * QuoteBucketPanel.tsx and PATCH /:id/plan-selection.
-   *
-   * Indexed by POSITION, not by plan_name/product_name - an earlier version keyed
-   * this by name and broke whenever two plans in the same document happened to
-   * share an identical name (not rare with auto-generated combinatorial names like
-   * "ANG TRAD 5000 7000"), since antd's Checkbox.Group and any name-based Set
-   * lookup can't tell two same-named entries apart. Position is always unique
-   * within one quote's own array.
-   *
-   * null/undefined means no filter - every plan/product shows, exactly as every
-   * quote behaved before this field existed. Applies uniformly across every build
-   * (Preview Current/Proposal and Final), not just the Final export, so a preview
-   * always shows what the export will actually contain. If a reprocess changes the
-   * plan count, tabBuilder.ts falls back to showing everything rather than trusting
-   * indices that may now point at the wrong plan - see resolveSelection().
+   * Allow-list of which plan/product option names (rawData.plans[].plan_name for
+   * simple_tiered, rawData.products[].product_name for age_banded/flat_rate_per_unit)
+   * actually appear in the comparison. Exists because a single carrier document can
+   * list a couple dozen plan variations (a 20-option medical proposal is the real
+   * case this was built for) and the agent usually only wants a handful of them in
+   * the deliverable - see the "Plans Shown" picker in QuoteBucketPanel.tsx and
+   * PATCH /:id/plan-selection. null/undefined means no filter - every plan/product
+   * shows, exactly as every quote behaved before this field existed. Applies
+   * uniformly across every build (Preview Current/Proposal and Final), not just the
+   * Final export, so a preview always shows what the export will actually contain.
    */
-  planSelection?: { included: number[] } | null;
+  planSelection?: { included: string[] } | null;
   createdAt: string;
 }
 

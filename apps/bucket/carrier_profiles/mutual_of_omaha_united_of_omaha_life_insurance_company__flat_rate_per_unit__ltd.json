@@ -1,0 +1,20 @@
+{
+  "carrier_name": "Mutual of Omaha (United of Omaha Life Insurance Company)",
+  "fingerprint": {
+    "must_contain": [
+      "Mutual of Omaha",
+      "United of Omaha Life Insurance Company"
+    ],
+    "any_of": [
+      "mutualofomaha.com",
+      "Group Insurance Proposal",
+      "Preferred Choice Voluntary Short-Term Disability"
+    ]
+  },
+  "extraction_notes": "This is a multi-product Mutual of Omaha \"Group Insurance Proposal\" document (quote/doc ID shown at top of each page, e.g. 24317905). Each product gets its own section starting with a bold section header (e.g. \"LONG-TERM DISABILITY INSURANCE\") and an \"Alternate\" number. Sections include Basic Life/AD&D, Voluntary Life/AD&D, Voluntary STD, LTD, Voluntary Dental, Voluntary Critical Illness, Voluntary Hospital Indemnity, Voluntary Accident, Voluntary Vision - only extract LTD per instructions.\n\nLTD LAYOUT: Found under \"LONG-TERM DISABILITY INSURANCE\" header. There is only ONE class/plan in this document (Class 1: All Eligible Employees). The \"BENEFIT SUMMARY\" table lists: Benefit Percentage (e.g. 60%), Maximum Benefit (e.g. $6,000), Guarantee Issue (same as max here), Elimination Period (e.g. 90 days), Accumulation Period, Own Occ Definition, Benefit Duration (e.g. \"RBD to SSNRA\" = to retirement/SS Normal Retirement Age), Integration method, Pre-Existing Condition, Mental/Drug limitations, Minimum Benefit.\n\nThe actual RATE is found later on a separate page under \"COST SUMMARY\" table with columns: Number of Lives | Covered Monthly Payroll | Monthly Rate | Total Monthly Premium | Total Annual Premium. The Monthly Rate is expressed as \"$X.XXX (Per $100 of Monthly Covered Payroll)\" - this is the flat rate per unit to extract. Only one row (one class) for LTD in this doc - do not miss it thinking there's more than one row.\n\nContribution structure and number of eligible employees are given in a \"PARTICIPATION ASSUMPTIONS\" table (Minimum Participation %, Number of Eligible Employees, Contribution Structure e.g. \"Non-Contributory\" = 100% employer paid or \"100% employee paid\").\n\nNote: Basic Life/AD&D and Voluntary Life/AD&D in this carrier's docs use per-$1,000 flat/age-banded rates (not LTD) - ignore those per instructions unless asked. STD in this carrier's docs is rated per $10 of weekly benefit by age band (age-banded, not flat) - do not confuse with LTD's flat per-$100-of-payroll rate. Total products/sections in this specimen doc: 9, but only LTD (1 row) was extracted per task instructions.",
+  "product_type": "flat_rate_per_unit",
+  "benefit_line": "LTD",
+  "created_at": "2026-08-10T00:22:31.312848+00:00",
+  "updated_at": "2026-09-08T02:12:38.113833+00:00",
+  "times_used": 8
+}

@@ -1,0 +1,77 @@
+{
+  "upload_kind": "benefits_document",
+  "headers": [
+    "Employee SSN",
+    "Relationship",
+    "Last Name",
+    "First Name",
+    "Full Name",
+    "Social Security Number",
+    "Accident Plan Coverage",
+    "Accident Plan Employee Monthly Cost",
+    "Accident Plan Employee Per Pay Cost",
+    "Group Life Plan",
+    "Group Life Employee Monthly Cost",
+    "Group Life Employer Monthly Cost",
+    "Group Life Benefit",
+    "Dental Plan Coverage",
+    "Dental Plan Employee Monthly Cost",
+    "Group Long-Term Disability Plan",
+    "Group Long-Term Disability Benefit",
+    "Group Long-Term Disability Employee Monthly Cost",
+    "Group Long-Term Disability Employer Monthly Cost",
+    "Hospital Indemnity Plan Coverage",
+    "Hospital Indemnity Plan Employee Monthly Cost",
+    "Critical Illness Benefit",
+    "Critical Illness Employee Monthly Cost",
+    "Voluntary Life Member Benefit",
+    "Voluntary Life Member Cost"
+  ],
+  "mapping": {},
+  "created_at": "2026-09-09T03:00:45.441529+00:00",
+  "updated_at": "2026-09-09T03:00:45.441673+00:00",
+  "times_used": 1,
+  "layout": "wide_multi_plan",
+  "plan_blocks": {
+    "Accident": {
+      "coverageTier": "Accident Plan Coverage",
+      "employeeMonthlyCost": "Accident Plan Employee Monthly Cost",
+      "employeePerPayCost": "Accident Plan Employee Per Pay Cost"
+    },
+    "Basic Life and AD&D": {
+      "planName": "Group Life Plan",
+      "employeeMonthlyCost": "Group Life Employee Monthly Cost",
+      "employerMonthlyCost": "Group Life Employer Monthly Cost",
+      "benefitAmount": "Group Life Benefit"
+    },
+    "Dental": {
+      "coverageTier": "Dental Plan Coverage",
+      "employeeMonthlyCost": "Dental Plan Employee Monthly Cost"
+    },
+    "LTD": {
+      "planName": "Group Long-Term Disability Plan",
+      "employeeMonthlyCost": "Group Long-Term Disability Employee Monthly Cost",
+      "employerMonthlyCost": "Group Long-Term Disability Employer Monthly Cost",
+      "coveredPayrollAmount": "Group Long-Term Disability Benefit"
+    },
+    "Hospital Indemnity": {
+      "coverageTier": "Hospital Indemnity Plan Coverage",
+      "employeeMonthlyCost": "Hospital Indemnity Plan Employee Monthly Cost"
+    },
+    "Critical Illness": {
+      "benefitAmount": "Critical Illness Benefit",
+      "employeeMonthlyCost": "Critical Illness Employee Monthly Cost"
+    },
+    "Voluntary Life and AD&D": {
+      "benefitAmount": "Voluntary Life Member Benefit",
+      "employeeMonthlyCost": "Voluntary Life Member Cost"
+    }
+  },
+  "identity_columns": {
+    "employeeSsnRaw": "Employee SSN",
+    "relationship": "Relationship",
+    "lastName": "Last Name",
+    "firstName": "First Name",
+    "fullName": "Full Name"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "carrier_name": "Mutual of Omaha (United of Omaha Life Insurance Company)",
+  "fingerprint": {
+    "must_contain": [
+      "Mutual of Omaha",
+      "United of Omaha Life Insurance Company"
+    ],
+    "any_of": [
+      "Group Insurance Proposal",
+      "mutualofomaha.com",
+      "PACKAGE PRICING"
+    ]
+  },
+  "extraction_notes": "Mutual of Omaha group proposals are multi-product documents (each product gets its own section with a header like \"VOLUNTARY TERM LIFE AND AD&D INSURANCE\", starting fresh page, with an \"Alternate:\" number). Structure per product: ELIGIBILITY block (class definitions, min work hours), BENEFIT SUMMARY block (min/max/increment/guarantee issue amounts in a table, benefit reduction schedule by age), then PARTICIPATION AND COST SUMMARY block with the actual rate table.\n\nFor \"Voluntary Term Life and AD&D\" specifically (this document had exactly this product with 2 sub-tables):\n1. Voluntary Term Life rate table: single \"Age Band\" column of 15 rows (<25, 25-29, 30-34, 35-39, 40-44, 45-49, 50-54, 55-59, 60-64, 65-69, 70-74, 75-79, 80-84, 85-89, 90-100), with rates per $1,000 - one column labeled \"Employee & Spouse Rate per $1,000\" (same rate applies to both classes) and one column \"All Children Rate per $1,000\" which is a SINGLE FLAT rate (only appears once, not age-banded - children get one flat rate regardless of age, printed only in the <25 row of the table but applies to all child coverage).\n2. Voluntary AD&D rate table: separate small table with 3 flat (non-age-banded) rates per $1,000: Employee, Spouse, All Children - typically all equal to each other.\nEmployee benefit amounts: min/max/increment/GI in a 4-column table; separate benefit reduction schedule by age (e.g., age 60->65%, 70+->50%). Spouse and Child benefit amount tables follow similarly labeled \"DEPENDENT SPOUSE BENEFIT AMOUNTS\" and \"DEPENDENT CHILD BENEFIT AMOUNTS\".\nTotal count check: this document's Voluntary Term Life and AD&D product = 3 classes (Employee, Spouse, Child) for Life, each age-banded except Child (flat); plus 3 classes for AD&D, all flat rated equal amount to life. Note: other products in the doc (Basic Life/AD&D, STD, LTD, Dental, Critical Illness, Hospital Indemnity, Accident, Vision) exist elsewhere and should be IGNORED unless specifically requested - they use flat composite/tier rates (Employee, Employee+Spouse, Employee+Child(ren), Employee+Family) rather than age-banded life rates, and are laid out similarly with ELIGIBILITY/BENEFIT SUMMARY/PARTICIPATION AND COST SUMMARY sections per product, each starting on a new page with an \"Alternate:\" numeric code.",
+  "product_type": "age_banded",
+  "benefit_line": "Voluntary Life and AD&D",
+  "created_at": "2026-08-10T01:49:37.616811+00:00",
+  "updated_at": "2026-10-01T19:31:29.972067+00:00",
+  "times_used": 8
+}

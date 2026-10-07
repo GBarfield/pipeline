@@ -1,0 +1,22 @@
+{
+  "carrier_name": "Angle Health",
+  "fingerprint": {
+    "must_contain": [
+      "SALES@ANGLEHEALTH.COM"
+    ],
+    "any_of": [
+      "AngleHealth.com",
+      "Angle Health, Inc.",
+      "Adrem Administrators LLC",
+      "ANG HDHP",
+      "ANG TRAD",
+      "ANG VALUE"
+    ]
+  },
+  "extraction_notes": "Angle Health level-funded medical proposal. Structure: Page 1 cover w/ group name, effective date, quote ID. Page 2 (and continued on page 3) 'Rates' page has a single consolidated rate grid listing ALL plans (this doc had 19 medical plans total: ANG HDHP 5000 5000, ANG HDHP 7000 7000, ANG HDHP 4000 7000, ANG TRAD 500 1500, ANG TRAD 1000 2000, ANG TRAD 2000 4000, ANG TRAD 3000 5000, ANG TRAD 4000 6000, ANG TRAD 5000 7000, ANG HDHP 1700 1700, ANG HDHP 3400 3400, ANG HDHP 3400 5000, ANG TRAD 7000 9200, ANG TRAD 8000 9200, ANG TRAD 9200 9200, ANG VALUE 9200, ANG HDHP 8000 8000, ANG VALUE 5000, ANG VALUE 7500) with columns Employee Only/Employee+Spouse/Employee+Children/Employee+Family/Actuarial Value, plus a 'Subscribers in tier' count row. Naming convention: 'ANG [TYPE] [ded] [oopm]' where first number after TYPE is often the in-network individual deductible and second is OOPM individual (not always equal - check each plan page). Each plan then gets its own dedicated page (PLANS section) with: Plan ID (format BENLFUT#######), In-Network Deductible/OOPM individual & family boxes, a Services table with columns 'Cost Share' and 'Deductible Applies' (Yes/No) covering ~19 rows in fixed order: Primary Care (Office), Specialist (Office), Virtual Care, Preventive Care, Urgent Care, Emergency Room, Inpatient Facility, Diagnostic Tests (X-Ray), Outpatient Facility, Outpatient Professional, Speech Therapy - OP Prof., Physical/Occupational Therapy - OP Prof., Independent Laboratory, Imaging - OP Facility, All Other Covered Services, Tier 1-4 Rx, International Rx Sourcing. Then an Out of Network Deductibles box (Deductible/OOPM Individual & Family OON, Coinsurance OON, Deductible Embedded Yes/No) and a Rates box (4 tiers only: EE Only/EE+Spouse/EE+Child(ren)/EE+Family - no separate 2-tier). After all plan pages, there are 3 'Funding Allocation' pages (Claims Fund, Stoploss Premium, Administrative Fee per plan/tier) - these are level-funding cost breakdowns, not separate products, so ignore/don't extract as benefits (optional to note in notes but not needed in main schema). Then Census pages (employee roster - ignore), Details pages (plan info/eligibility/legal terms - ignore), and marketing/cost-of-ownership pages at the end - ignore all of these for extraction purposes. Document quoted ONLY medical plans (no dental/vision/life in this particular proposal) but if other products appear in future docs from Angle, skip them per instructions. Total plan count for this doc: 19. Rates only have 4 tiers (no true 'employee+child' vs 'employee+children' distinction, singular EE+Spouse/EE+Child(ren)/Family used consistently, no 2-party generic tier).",
+  "product_type": "simple_tiered",
+  "benefit_line": "Medical",
+  "created_at": "2026-09-08T02:07:00.799316+00:00",
+  "updated_at": "2026-09-08T02:07:00.799347+00:00",
+  "times_used": 1
+}

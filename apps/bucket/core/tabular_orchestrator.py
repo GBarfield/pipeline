@@ -71,6 +71,12 @@ TARGET_FIELDS = {
         "effectiveDate": "The coverage effective/start date for this enrollment, if given.",
         "terminationDate": "The coverage termination/end date for this enrollment, if given.",
         "status": "The enrollment status as reported by the document, e.g. active, termed, pending, if given.",
+        "employeeMonthlyCost": "The employee's monthly cost for this specific plan, if given.",
+        "employeePerPayCost": "The employee's per-pay-period cost for this specific plan, if this is a distinct figure from the monthly cost.",
+        "employerMonthlyCost": "The employer's monthly cost/contribution for this specific plan, if given.",
+        "benefitAmount": "The face-value coverage/benefit amount for this plan (e.g. a life insurance benefit), if given.",
+        "coveredPayrollAmount": "The covered monthly payroll amount this plan's rate is based on (LTD/STD), if given.",
+        "employeeSsnRaw": "The employee's Social Security Number, for matching to internal records only - never displayed.",
         "companyName": (
             "The employer/company this row belongs to, ONLY if the file identifies a "
             "company per row or section (e.g. a multi-company roster with a 'Group "

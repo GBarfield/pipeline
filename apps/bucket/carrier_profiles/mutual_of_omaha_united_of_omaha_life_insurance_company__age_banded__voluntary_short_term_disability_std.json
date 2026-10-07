@@ -1,0 +1,21 @@
+{
+  "carrier_name": "Mutual of Omaha (United of Omaha Life Insurance Company)",
+  "fingerprint": {
+    "must_contain": [
+      "Mutual of Omaha",
+      "United of Omaha Life Insurance Company",
+      "Group Insurance Proposal"
+    ],
+    "any_of": [
+      "Preferred Choice Voluntary Short-Term Disability",
+      "mutualofomaha.com",
+      "24317905"
+    ]
+  },
+  "extraction_notes": "This is a multi-product Mutual of Omaha \"Group Insurance Proposal\" document. Products appear as separate sections each starting with a bold header (e.g. \"BASIC TERM LIFE AND AD&D INSURANCE\", \"VOLUNTARY TERM LIFE AND AD&D INSURANCE\", \"PREFERRED CHOICE VOLUNTARY SHORT-TERM DISABILITY INSURANCE\", \"LONG-TERM DISABILITY INSURANCE\", \"VOLUNTARY DENTAL INSURANCE\", \"VOLUNTARY CRITICAL ILLNESS INSURANCE\", \"VOLUNTARY HOSPITAL INDEMNITY INSURANCE\", \"VOLUNTARY ACCIDENT INSURANCE\", \"VOLUNTARY VISION INSURANCE\"), each with its own Eligibility, Benefit Summary, Participation and Cost Summary, and Additional Benefits sub-sections.\n\nFor the Voluntary Short-Term Disability (STD) product specifically (\"PREFERRED CHOICE VOLUNTARY SHORT-TERM DISABILITY INSURANCE\"): it has only ONE coverage class (Class 1 - All Eligible Employees). There is no spouse/child coverage for STD. The rate table titled \"COST SUMMARY*\" under \"PARTICIPATION AND COST SUMMARY (CONT'D)\" lists a single column \"Monthly Rate (Per $10 of Weekly Benefit)\" against 12 age bands: <20, 20-24, 25-29, 30-34, 35-39, 40-44, 45-49, 50-54, 55-59, 60-64, 65-69, 70-99. This is the only rate grid for STD - there are no separate coverage-amount columns, just one rate per age band (rate structure is age-banded, applied per $10 of weekly benefit rather than per coverage amount tier). Benefit percentage is 60%, max benefit $1,500/week, elimination periods 7 days (accident and sickness), benefit duration 12 weeks.\n\nOther products in this document (ignore unless separately requested): Basic Term Life and AD&D (flat $50,000 benefit, non-age-banded rate $0.125/$1,000 life + $0.014/$1,000 AD&D), Voluntary Term Life and AD&D (age-banded Employee/Spouse rate per $1,000 with 15 age bands from <25 to 90-100, plus flat Child rate $0.240/$1,000, and flat AD&D rates for Employee/Spouse/Child at $0.015/$1,000 each), Long-Term Disability (flat rate $0.236 per $100 of covered payroll, one class), Voluntary Dental (2 classes: High/Class 1 and Low/Class 2, flat tiered rates by family status - Employee Only/+Spouse/+Child(ren)/+Family), Voluntary Critical Illness (age-banded Employee/Spouse rate per $1,000 with 7 age bands <30 to 80-99; child coverage automatic no separate premium), Voluntary Hospital Indemnity (flat tiered rates by family status, one class), Voluntary Accident (flat tiered rates by family status, one class), Voluntary Vision (flat tiered rates by family status, one class, EyeMed Insight Network).\n\nTotal count check for this doc: 9 distinct products total; STD product itself has exactly 1 coverage class (Employee) with 12 age bands and 1 rate column each. Quote/proposal ID appears as \"24317905\" on every page footer. Effective date 09/01/26 (2026) stated at top of each product section; rate guarantee dates are 09/01/2028 (2yr) for most, 09/01/2027 (1yr) for Dental and Vision uses 09/01/2028 (2yr).",
+  "product_type": "age_banded",
+  "benefit_line": "Voluntary Short-Term Disability (STD)",
+  "created_at": "2026-08-10T02:20:17.763792+00:00",
+  "updated_at": "2026-08-10T02:20:17.763810+00:00",
+  "times_used": 1
+}

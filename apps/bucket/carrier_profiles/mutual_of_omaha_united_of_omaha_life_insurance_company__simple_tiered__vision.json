@@ -1,0 +1,20 @@
+{
+  "carrier_name": "Mutual of Omaha (United of Omaha Life Insurance Company)",
+  "fingerprint": {
+    "must_contain": [
+      "Mutual of Omaha",
+      "United of Omaha Life Insurance Company"
+    ],
+    "any_of": [
+      "Group Insurance Proposal",
+      "mutualofomaha.com",
+      "Alternate:"
+    ]
+  },
+  "extraction_notes": "This is a multi-product Mutual of Omaha (underwritten by United of Omaha Life Insurance Company) Group Insurance Proposal covering many coverage types (Basic Life/AD&D, Voluntary Life/AD&D, STD, LTD, Dental, Critical Illness, Hospital Indemnity, Accident, Vision), each presented as its own section starting with a header naming the product (e.g. 'VOLUNTARY VISION INSURANCE') and an 'Alternate:' number identifying the product option. Only the Vision section is relevant for the Vision product type.\n\nVISION SECTION LAYOUT: Found near end of document (page ~29-31, 'VOLUNTARY VISION INSURANCE', Alternate 10.00). Structure:\n- ELIGIBILITY block: class definitions (usually just Class 1: All Eligible Employees), min work hours, child eligibility ages.\n- BENEFIT SUMMARY: a two-column table 'SERVICES & MATERIALS' with 'In-Network Cost' and 'Out-of-Network Reimbursement' columns. Rows grouped by category headers (Comprehensive Vision Exam, Exam Options, Frames, Standard Plastic Lenses, Contact Lenses, Lens Options) followed by a 'Benefit Frequency' subtable (Examination/Lenses/Frame - typically 'Once every 12 months' each). This is the ONLY plan/class offered for vision in this document (single class, no plan tiers like High/Low as seen in Dental).\n- FEATURES section: Network info (EyeMed Insight Network), Additional Pairs discount, Laser Vision Correction discount, Added Discounts, Annual Open Enrollment, Continuation for Federal/State laws - these are narrative extras, not benefit cost items, can be omitted from benefits map or noted briefly.\n- PARTICIPATION AND PREMIUM section (next page): table with Minimum Participation %, Number of Eligible Employees, Contribution Structure (typically 100% Employee Paid), followed by 'VISION PREMIUM RATES CLASS 1' table with rows Employee Only / Employee+Spouse / Employee+Child(ren) / Employee+Family, each with Assumed Lives, Monthly Rates, Monthly Premium, Annual Premium. Use the 'Monthly Rates' column as the rate per tier for record_quote_data. Rate Guarantee period and date follow.\n\nNo deductible/OOP max fields apply to vision (leave blank). No out-of-network deductible/coinsurance beyond the per-service reimbursement caps shown in the table - capture those as out_of_network map keyed by service.\n\nOnly one vision \"plan\" class was present in this document (Class 1) - if future docs have multiple vision classes (e.g. High/Low like the Dental section does), extract each class separately with its own full benefit table, following the same pattern used for multi-class Dental in this carrier's documents (Class 1/Class 2 sections with separate BENEFIT SUMMARY headers).\n\nGeneral document notes: Each product section repeats structure: Proposal for/Alternate number, ELIGIBILITY block, BENEFIT SUMMARY/plan details, PARTICIPATION AND COST/PREMIUM SUMMARY with rate tables, RATE GUARANTEE info, then ADDITIONAL BENEFITS/FEATURES narrative. Total products in this specific document: 9 (Basic Life/AD&D, Voluntary Life/AD&D, Voluntary STD, LTD, Voluntary Dental [2 classes], Voluntary Critical Illness, Voluntary Hospital Indemnity, Voluntary Accident, Voluntary Vision). Only Vision was extracted per task instructions.",
+  "product_type": "simple_tiered",
+  "benefit_line": "Vision",
+  "created_at": "2026-08-10T01:51:53.487641+00:00",
+  "updated_at": "2026-10-01T19:32:27.609043+00:00",
+  "times_used": 6
+}

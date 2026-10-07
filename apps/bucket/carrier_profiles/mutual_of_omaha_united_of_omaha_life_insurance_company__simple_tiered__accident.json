@@ -1,0 +1,20 @@
+{
+  "carrier_name": "Mutual of Omaha (United of Omaha Life Insurance Company)",
+  "fingerprint": {
+    "must_contain": [
+      "United of Omaha Life Insurance Company"
+    ],
+    "any_of": [
+      "Mutual of Omaha",
+      "mutualofomaha.com",
+      "Group Insurance Proposal",
+      "Preferred Choice Voluntary Short-Term Disability"
+    ]
+  },
+  "extraction_notes": "This is a multi-product Mutual of Omaha (underwritten by United of Omaha Life Insurance Company) 'Group Insurance Proposal'. Document contains 10 products in this order: Basic Term Life & AD&D, Voluntary Term Life & AD&D, Preferred Choice Voluntary STD, Long-Term Disability (appears twice, identical - alternate 3.00 listed twice, likely duplicate), Dental, Voluntary Critical Illness, Voluntary Hospital Indemnity, Voluntary Accident, Vision. Each product section begins with 'Proposal for:' and 'Alternate:' number header, followed by ELIGIBILITY, then a BENEFIT SUMMARY/ACCIDENT INSURANCE section with benefit tables, then PARTICIPATION AND COST SUMMARY with rate tables. Only one plan/class (Class 1: All Eligible Employees) is offered per product - no multiple plan options/tiers to choose between, just one plan design per product with rates broken out by coverage tier (Employee Only, Employee+Spouse, Employee+Child(ren), Employee+Family) for voluntary dependent-eligible products, or by age-band per $1,000/per $10 of benefit for life/STD/LTD/CI products.\n\nFor the VOLUNTARY ACCIDENT product specifically (Alternate 8.00, pages 24-28): single Class 1 plan, rates are flat monthly premiums for 4 tiers (Employee/Member, +Spouse, +Child(ren), +Family) - no age-banding. Extensive benefit schedule includes Initial Care/Emergency (ER, Urgent Care, Physician visit, ambulance), Specified Injury Benefits (long fracture/dislocation schedule by bone/joint with Open vs Closed Reduction columns - roughly 24 fracture bone types and 11 dislocation joint types), Other Injuries (lacerations, burns, dental), Hospital/Surgical/Diagnostic Benefits, Follow-Up Care Benefits, Additional Benefits (transportation, lodging, childcare, health screening, child sports injury booster), and Catastrophic Benefits (Accidental Death with separate principal sums for EE/spouse/child, Dismemberment & Paralysis percentages, Coma, Reasonable Modifications). Rate guarantee 2 years to 11/01/2028. Participation: greater of 5 enrolled or 6%, 92 eligible, 100% employee paid. Eligibility: Class 1 all eligible employees 30+ hrs/week, termination age 80, 24-hr coverage, 4 coverage tier options. This proposal's effective date for all products is 11/01/2026. Note: detailed Definitions/Exclusions/Eligibility Summary sections for Accident product appear later in document (pages 48-52) - these are supplementary/boilerplate text, not additional plans.\n\nOther products in this doc (Basic/Vol Life, STD, LTD, Dental, Critical Illness, Hospital Indemnity, Vision) should be ignored per task instructions but follow similar layout pattern: Proposal for/Alternate header, ELIGIBILITY block, BENEFIT SUMMARY table(s), PARTICIPATION AND COST SUMMARY with rate table, then ADDITIONAL BENEFITS/FEATURES bullet list. Rate guarantee generally 2 years (Dental and Vision differ: Dental 1 year, Vision 2 years). Total distinct products = 9 unique (LTD duplicated as 2 identical alternate 3.00 sections).",
+  "product_type": "simple_tiered",
+  "benefit_line": "Accident",
+  "created_at": "2026-10-01T19:32:15.185838+00:00",
+  "updated_at": "2026-10-01T19:32:15.185855+00:00",
+  "times_used": 1
+}

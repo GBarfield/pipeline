@@ -1,0 +1,20 @@
+{
+  "carrier_name": "Mutual of Omaha (United of Omaha Life Insurance Company)",
+  "fingerprint": {
+    "must_contain": [
+      "Mutual of Omaha",
+      "United of Omaha Life Insurance Company"
+    ],
+    "any_of": [
+      "Underwritten by United of Omaha Life Insurance Company",
+      "mutualofomaha.com",
+      "A Mutual of Omaha Company"
+    ]
+  },
+  "extraction_notes": "This is a multi-product Mutual of Omaha (underwritten by United of Omaha Life Insurance Co.) group insurance proposal. Each product (Basic Term Life and AD&D, Voluntary Term Life and AD&D, Preferred Choice Voluntary STD, LTD, Voluntary Dental, Voluntary Critical Illness, Voluntary Hospital Indemnity, Voluntary Accident, Voluntary Vision) is presented as its own multi-page section with header \"BENEFIT SUMMARY\" and \"PARTICIPATION AND COST SUMMARY\" blocks.\n\nFor BASIC TERM LIFE AND AD&D (the only product extracted here): appears early in doc (page 2-3), titled \"BASIC TERM LIFE AND AD&D INSURANCE\". Only 1 class (\"Class 1: All Eligible Employees\"). Benefit is a single flat amount table (Benefit/Maximum Benefit/Guarantee Issue Amount/Minimum Benefit - all equal, e.g. $50,000). AD&D benefit amount equals the Basic Life amount (Principal Sum = Life amount), so AD&D typically has no separate benefit formula, just \"equal to life amount.\"\n\nRates are found in \"COST SUMMARY\" table under \"PARTICIPATION AND COST SUMMARY\" section: rows for \"Employee Term Life\" and \"Employee AD&D\", each with columns Number of Lives, Total Monthly Volume, Monthly Rate (per $1,000), Total Monthly Premium, Total Annual Premium. Extract the \"Monthly Rate\" column value (formatted like \"$0.125/$1,000\") as rate_per_unit with basis \"per $1,000 of coverage\". This is a flat-rate (not age-banded, not tiered) pricing model since benefit is a single flat amount for all employees.\n\nContribution structure found in \"PARTICIPATION ASSUMPTIONS\" table (e.g. \"Non-Contributory\" = 100% employer paid, or \"100% employee paid\" for voluntary products).\n\nGuarantee issue amount and benefit amounts found in \"BENEFIT SUMMARY\" section tables per class.\n\nNote: this document contains many other products (LTD/STD priced per $100 of payroll with age-banded or flat rates elsewhere, Voluntary Life priced age-banded per $1,000, Dental/Vision/Accident/Hospital Indemnity/Critical Illness priced per tier or age-band) - these should be extracted separately as age_banded or simple_tiered products, NOT flat_rate, when instructed to do so. Only Basic Life/AD&D and LTD/STD (per payroll) fit the flat_rate schema in this carrier's documents typically. Total count of relevant flat-rate entries for Basic Life/AD&D section: 2 (Employee Term Life, Employee AD&D) - single class, no dependent tiers for basic coverage.",
+  "product_type": "flat_rate_per_unit",
+  "benefit_line": "Basic Life and Basic AD&D",
+  "created_at": "2026-08-10T02:18:38.814270+00:00",
+  "updated_at": "2026-08-10T02:18:38.814285+00:00",
+  "times_used": 1
+}

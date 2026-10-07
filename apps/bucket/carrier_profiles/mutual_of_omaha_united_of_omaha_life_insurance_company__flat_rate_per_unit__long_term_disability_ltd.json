@@ -1,0 +1,20 @@
+{
+  "carrier_name": "Mutual of Omaha (United of Omaha Life Insurance Company)",
+  "fingerprint": {
+    "must_contain": [
+      "Mutual of Omaha",
+      "United of Omaha Life Insurance Company"
+    ],
+    "any_of": [
+      "mutualofomaha.com",
+      "Group Insurance Proposal",
+      "Underwritten by United of Omaha Life Insurance Company"
+    ]
+  },
+  "extraction_notes": "Multi-product Mutual of Omaha \"Group Insurance Proposal\" packet (Basic Life/AD&D, Vol Life/AD&D, STD, LTD, Dental, Critical Illness, Hospital Indemnity, Accident, Vision), each product on its own numbered section with header \"Proposal for\" / \"Alternate\" number. For LTD specifically: located in section titled \"LONG-TERM DISABILITY INSURANCE\" (page labeled \"Long-Term Disability Insurance\"). Only ONE class/plan (Class 1: All Eligible Employees) in this document - single flat rate. Benefit Summary table lists: Benefit Percentage (60%), Maximum Benefit ($6,000), Guarantee Issue ($6,000), Elimination Period (90 days), Accumulation Period, Zero Day Residual, Own Occ Definition, Benefit Duration (e.g. \"RBD to SSNRA\"), Integration, Pre-Existing Condition, Mental Disorders, Drug & Alcohol, Self-Reported/Specific Conditions limits, Minimum Benefit. Partial Disability table follows with Earnings Test %, Partial Disability Formula, Work Incentive - these are not part of flat-rate schema, ignore for extraction purposes beyond noting benefit_amount_formula/duration/elimination_period.\n\nCost Summary table (on the next page, titled \"COST SUMMARY\") has columns: Number of Lives, Covered Monthly Payroll, Monthly Rate (stated as \"$X.XXX (Per $100 of Monthly Covered Payroll)\"), Total Monthly Premium, Total Annual Premium - only one row labeled \"LTD\". This is the flat rate to extract (rate_per_unit = dollar amount before \"(Per $100 of Monthly Covered Payroll)\").\n\nParticipation Assumptions table (Minimum Participation %, Number of Eligible Employees, Contribution Structure - e.g. \"Non-Contributory\" = 100% employer paid, or \"100% employee paid\") appears above the Cost Summary and indicates contribution structure - use for employee_contribution_pct field.\n\nOnly 1 LTD plan/class present in this document - confirm no other LTD classes exist before concluding extraction. Other products in the packet (Basic Life/AD&D uses per-$1,000 rate, Voluntary Life uses age-banded rates, STD uses per-$10-of-weekly-benefit age-banded rates, Dental/Vision/Accident/Hospital Indemnity/Critical Illness use tiered enrollment rates) should be ignored when only LTD is requested. Document also contains a final \"Requirements and Assumptions\" section with SIC code, situs state, general proposal conditions - not product-specific data.",
+  "product_type": "flat_rate_per_unit",
+  "benefit_line": "Long-Term Disability (LTD)",
+  "created_at": "2026-08-10T02:20:36.276218+00:00",
+  "updated_at": "2026-08-10T02:20:36.276232+00:00",
+  "times_used": 1
+}

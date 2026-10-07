@@ -1,0 +1,20 @@
+{
+  "carrier_name": "Pacific Life & Annuity Company",
+  "fingerprint": {
+    "must_contain": [
+      "Pacific Life & Annuity Company"
+    ],
+    "any_of": [
+      "Rice Precision Manufacturing",
+      "PLA-CI-POL23",
+      "Proposal ID: P1691123005",
+      "WB23-7C"
+    ]
+  },
+  "extraction_notes": "Pacific Life multi-product \"Workforce Benefits Proposal\" PDFs contain many products (Dental, Vision, Basic Life/AD&D, Voluntary Life/AD&D, STD, Critical Illness, Hospital Indemnity, Accident), each with its own clearly labeled section headed \"Group [Product Name] Insurance - [Tier Name]\" (e.g. \"Group Critical Illness Insurance - Standard\"). For Critical Illness specifically: there is ONE age-banded rate table (titled \"Uni-Tobacco Rates Attained Age per $1,000\") with 12 age bands (18-25, 26-30, 31-35, 36-40, 41-45, 46-50, 51-55, 56-60, 61-65, 66-69, 70-74, 75-99) and 4 columns: Employee Coverage, Employee+Spouse Coverage, Employee+Child(ren) Coverage, Employee+Family Coverage. Note Employee and Employee+Child(ren) columns are identical values, and Employee+Spouse and Employee+Family columns are identical values (because spouse/child riders are rated as additive percentage of face, not reflected in this particular rate table - the per-$1,000 rate for the dependent-inclusive tiers equals employee rate plus a spouse loading, with children added at no extra per-unit cost in this table). Rates are monthly per $1,000 of coverage, uni-tobacco (no distinct smoker/non-smoker rates). Following the rate table on subsequent pages is a Plan Details table (Face Amount $30,000 flat benefit - not variable by employee choice in this proposal, Guarantee Issue $30,000, Employee 100%/Spouse 50%/Child 25% of face amount, voluntary contribution, child max age 26, coverage termination age 80, portability to age 70, pre-ex 3/12, age reduction to 50% at 70, no benefit waiting period, no lifetime max), then two benefit-schedule tables: \"Benefits With Recurrence Provision\" (18 conditions incl. Invasive Cancer, Heart Attack, Stroke, etc., values as % of benefit) and \"Benefit Without Recurrence Provision\" (11 adult conditions + 8 \"Childhood Benefits\" conditions, also % of benefit) - these are benefit percentage schedules, not separate coverage classes/rate grids, so not part of the age-banded extraction. Only 4 coverage classes exist for CI (Employee, Employee+Spouse, Employee+Child(ren), Employee+Family) - no separate standalone \"Spouse\" or \"Child\" class with their own independent rate table. Other products in the doc (Dental, Vision, Basic Life, Voluntary Life/AD&D, STD, Hospital Indemnity, Accident) should be ignored per task instructions when only Critical Illness is requested - each has its own distinct rate structure (flat composite tiers for Dental/Vision/Hospital Indemnity/Accident, age-banded for Voluntary Life and STD, flat for Basic Life). Document is ~45 pages; CI section spans pages 28-32 (header page, rate table page, plan details page, recurrence benefits page, non-recurrence+childhood benefits page, general info/exclusions page).",
+  "product_type": "age_banded",
+  "benefit_line": "Critical Illness",
+  "created_at": "2026-10-01T19:36:49.620301+00:00",
+  "updated_at": "2026-10-01T19:36:49.620317+00:00",
+  "times_used": 1
+}

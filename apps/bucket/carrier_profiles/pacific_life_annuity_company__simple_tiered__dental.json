@@ -1,0 +1,22 @@
+{
+  "carrier_name": "Pacific Life & Annuity Company",
+  "fingerprint": {
+    "must_contain": [
+      "Pacific Life & Annuity Company",
+      "Proposal ID: P1691123005"
+    ],
+    "any_of": [
+      "Workforce Benefits Proposal For",
+      "PacificLife.com/ratings",
+      "WB23-7C",
+      "Dental Policy Form Series PLADNPOL22",
+      "CLA.workforcebenefits@pacificlife.com"
+    ]
+  },
+  "extraction_notes": "Pacific Life \"Workforce Benefits\" multi-product proposal PDF. Document contains many products (Dental, Vision, Basic Life/AD&D, Voluntary Life/AD&D, STD, Critical Illness, Hospital Indemnity, Accident) each as its own section with its own page range listed in the \"What's Included\" table of contents on page 3. Only extract the product(s) requested by the user task - for this task, only \"Group Dental Insurance - Elite\" (pages 4-8).\n\nDental section layout: Page 4 header shows Effective Date, Rate Guarantee, Situs State. Monthly Premium table has 4 tiers: Employee Only, Employee + Spouse, Employee + Children, Employee + Family (single dollar values, not a rate table by age). Followed by Employees/Minimum Participation/Minimum Hours table. Then a \"Passive PPO Plan\" box with In-Network and Out-of-Network columns (values identical in this doc) covering: Benefit Year Maximum (applies to Class A/B/C combined), Coinsurance by class (A=Preventive 100%, B=Basic 80%, C=Major 50%), and Deductible (applies to Class B&C, per-person with family max count). Only ONE dental plan/product tier is present in this document (no Low/Standard/High variants) - just \"Elite\". Covered Services Details table lists bullet items per class (A/B/C) on pages 4-5 - treat these as the benefit list, map coinsurance % as the cost-share per class rather than per individual procedure since that's all that's disclosed. Page 5 also has Plan Benefits and Information: Rollover Benefit (threshold/amount/max), Takeover provision, and Reimbursement basis (in-network = PPO fee schedule, out-of-network = 90th percentile - record these under out_of_network field). Page 6 is marketing text about network (no data). Page 7 is exclusions/limitations (narrative, not per-benefit data). Page 8 has additional info: dependent eligibility varies by state, benefit annual max cross-accumulation note, termination provisions, rerate trigger (+/-15% enrollment deviation), Policy Form Series PLADNPOL22/PLADNCERT22 (ID: PLADNPOL22-ID/PLADNCERT22-ID), and Producer Commission Level 10%.\n\nOther products in this same doc type (for future reference, NOT dental): Vision (Classic-16, EyeMed network, pages 9-12, single plan with detailed EXAMS/EYEGLASSES/CONTACT LENSES copay/allowance table), Basic Life/AD&D (pages 13-14, rate per $1000 + flat $20,000 benefit, one class), Voluntary Life/AD&D employee+spouse+child (pages 15-18, age-banded per-$1000 rates), STD (pages 22-24, age-banded rate table + single voluntary plan detail table), Critical Illness - Standard (pages 28-32, age-banded per-$1000 rates by tier + benefit % list), Hospital Indemnity - High (pages 33-35, flat tier premiums + admission/confinement benefit table), Accident - Medium (pages 37-43, flat tier premiums + extensive itemized benefit schedule). Each of these non-dental products also only has ONE plan/tier offered in this document (no multiple plan options per product) - total distinct \"plans\" across whole document = 8 (one per product line), not multiple plans within a product.",
+  "product_type": "simple_tiered",
+  "benefit_line": "Dental",
+  "created_at": "2026-10-01T19:34:48.523634+00:00",
+  "updated_at": "2026-10-01T19:34:48.523650+00:00",
+  "times_used": 1
+}

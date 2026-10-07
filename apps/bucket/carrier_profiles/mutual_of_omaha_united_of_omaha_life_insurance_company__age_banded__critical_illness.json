@@ -1,0 +1,21 @@
+{
+  "carrier_name": "Mutual of Omaha (United of Omaha Life Insurance Company)",
+  "fingerprint": {
+    "must_contain": [
+      "Mutual of Omaha",
+      "United of Omaha Life Insurance Company"
+    ],
+    "any_of": [
+      "Group Insurance Proposal",
+      "Alliant Insurance Services",
+      "Voluntary Critical Illness Insurance",
+      "24317905"
+    ]
+  },
+  "extraction_notes": "This is a multi-product Mutual of Omaha group insurance proposal (quote #24317905) for Bartel Communications, containing Basic Life/AD&D, Voluntary Life/AD&D, STD, LTD, Dental, Critical Illness, Hospital Indemnity, Accident, and Vision - each product is its own section starting with a bold header page (e.g. \"VOLUNTARY CRITICAL ILLNESS INSURANCE\") and an \"Alternate:\" number.\n\nFor CRITICAL ILLNESS specifically (found ~pages 16-20, Alternate 7.00):\n- ELIGIBILITY section defines \"Class 1: All Eligible Employees\" - only one employee class in this doc.\n- AMOUNTS OF INSURANCE table gives Min/Max/Increment/Guarantee Issue for 3 tiers: Employee/Member, Spouse, All Children (children coverage is automatic, no separate election/premium).\n  - Employee/Member: Min $10,000, Max $20,000, Increment $10,000, GI $20,000\n  - Spouse: Min $10,000, Max up to 100% of EE benefit up to $20,000, Increment $10,000, GI $20,000\n  - Children: up to 25% of EE benefit up to $10,000, guaranteed (no increments, automatic)\n- BENEFITS - CLASS 1 table lists a large Critical Illness Benefit table (Initial Benefit % of Principal Sum + Reoccurrence Benefit %) organized by category headers (Autoimmune, Cancers, Vascular/Pulmonary, Neurological, Organ) - this is benefit schedule detail, not rate table; recorded as descriptive product info, not part of age-banded rates.\n- PREMIUM RATES table \"CRITICAL ILLNESS PREMIUM RATES\" gives a single age-banded rate-per-$1000 schedule labeled \"Employee/Member* Monthly Rates per $1,000\" with 7 bands: <30, 30-39, 40-49, 50-59, 60-69, 70-79, 80-99. Footnote clarifies these same rates apply to employee/member AND spouse (spouse uses employee's age). Child insurance is automatic with no separate premium - so Children class has no rate table (flat/zero).\n- So there are 3 coverage classes total: Employee/Member (age-banded), Spouse (age-banded, same rate table as employee), All Children (flat/no premium, automatic amount).\n- Rate Guarantee: 2 Years, Rate Guarantee Date 09/01/2028.\n- Participation: 31% minimum, 104 eligible employees, 100% Employee/Member paid.\n- Watch out: this document has MANY other products (Basic Life, Vol Life, STD, LTD, Dental x2 classes, Hospital Indemnity, Accident, Vision) that must be ignored if only Critical Illness is requested - they appear before and after the Critical Illness section and use similar formatting (Alternate #, ELIGIBILITY, BENEFIT SUMMARY, PARTICIPATION AND COST SUMMARY headers), so carefully identify only the \"VOLUNTARY CRITICAL ILLNESS INSURANCE\" header section by matching bold title text.\n- Total count check for Critical Illness product: 1 product, 3 coverage classes (Employee/Member, Spouse, Children), each employee/spouse class has 7 age bands with 1 rate column (per $1,000) - no separate coverage-amount columns since it's a per-unit rate, not a rate grid.",
+  "product_type": "age_banded",
+  "benefit_line": "Critical Illness",
+  "created_at": "2026-08-10T00:23:29.903769+00:00",
+  "updated_at": "2026-09-08T02:12:59.751113+00:00",
+  "times_used": 8
+}

@@ -1,0 +1,19 @@
+{
+  "carrier_name": "Aetna",
+  "fingerprint": {
+    "must_contain": [
+      "Aetna Funding Advantage Caveats"
+    ],
+    "any_of": [
+      "AFA CPOSII",
+      "New Business Dental Cost Grid",
+      "Aetna Vision"
+    ]
+  },
+  "extraction_notes": "Aetna Small Group new business proposal (AFA - Aetna Funding Advantage, self-funded). Document contains 3 products in sequence: (1) Medical - 'NB AFA Medical Cost Grid - Single Options' spanning pages 3-10, a single large table (~90 plans, all CPOS II network) with columns: Plan Name/Plan ID, Ded/Co-ins PCP/SPEC RX (format: deductible,coinsurance%,PCP copay/SPEC copay, plus Rx tier structure string), Network, EE/EE+SP/EE+CH/FAM/Total monthly premiums (each cell also shows enrollment count in parens), then Agg/StopLoss/Admin/TRO totals (self-funded cost components, not premium). (2) Dental - 'New Business Dental Cost Grid' on pages 11-13, table with columns: Plan Name/Plan ID, In-Network Benefits (format Prev%/Basic%/Major%,Deductible/MaxBenefit/Ortho), OON Benefits (Deductible/MaxBenefit/Ortho), Network (PPO), EE/EE+SP/EE+CH/FAM/Total monthly rates. Dental has ~40 plans (paired 'GA' employer-paid and 'Vol' voluntary versions with same numeric IDs pattern, plus Ortho variants and NT P-series). Extract ALL rows - do not skip paired GA/Vol plans as duplicates, they are distinct plan rows with distinct Plan IDs. (3) Vision - 'Aetna Vision Preferred Small Group Plans' on page 15, compact grid format (E100/E130/E160/E200 plans x 12M/24M frame options) - only extract if Vision product is requested. Total counts in this doc: Medical ~90 plans, Dental ~40 plans, Vision 4 plans (8 rate variants). Pages 17-18 have a census grid (employee list) - not benefit plan data. Pages 19-25 are caveats/disclaimers, no plan data. Group name, quote ID, and effective date are on page 2 header info box. When only 'Dental' product is requested, extract only the New Business Dental Cost Grid table (pages 11-13), ignore Medical and Vision sections entirely.",
+  "product_type": "simple_tiered",
+  "benefit_line": "Dental",
+  "created_at": "2026-09-07T21:54:09.361353+00:00",
+  "updated_at": "2026-09-07T21:54:09.361369+00:00",
+  "times_used": 1
+}

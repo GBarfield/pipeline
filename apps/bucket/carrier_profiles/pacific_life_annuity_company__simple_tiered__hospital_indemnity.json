@@ -1,0 +1,22 @@
+{
+  "carrier_name": "Pacific Life & Annuity Company",
+  "fingerprint": {
+    "must_contain": [
+      "Pacific Life & Annuity Company",
+      "Proposal ID: P1691123005"
+    ],
+    "any_of": [
+      "Workforce Benefits Proposal",
+      "WB23-7C",
+      "PacificLife.com",
+      "Group Hospital Indemnity Insurance",
+      "pacificlife.com/vision"
+    ]
+  },
+  "extraction_notes": "Pacific Life \"Workforce Benefits Proposal\" documents are multi-product employee benefits proposals (Dental, Vision, Basic Life/AD&D, Voluntary Life/AD&D, STD, Critical Illness, Hospital Indemnity, Accident). Each product appears as its own section with its own header block showing Effective Date, Rate Guarantee, and Situs State.\n\nFor this task, only the \"Group Hospital Indemnity Insurance - [Tier]\" section should be extracted (here tier = \"High\"). In this document there is exactly ONE Hospital Indemnity plan/tier offered (no multiple tiers like Low/Medium/High side-by-side - just \"High\").\n\nLayout of the Hospital Indemnity section (3 pages):\n1. First page: title \"Group Hospital Indemnity Insurance - [Tier]\", \"Employees Eligible for Coverage - N\" subheading, then a \"Monthly Premium Rates\" table with rows: Employee, Employee + Spouse, Employee + Child(ren), Employee + Family (Spouse + Children) - these map to employee_only/employee_spouse/employee_children/family. Below that a \"Plan Details\" table (two columns: Plan Details | Description) listing: Minimum Participation Requirement, Minimum Hours for Eligibility, Child Maximum Age, Contribution, Coverage Termination Age, Portability, Pre-Existing Condition, Childbirth Exclusion, Childbirth Covered On Plan Effective Date, Benefit Waiting Period, Age Reduction.\n2. Second page: \"Benefit\" / \"Benefit Amount\" table listing Admission/Confinement benefits (Hospital Admission, Hospital Daily Confinement, Hospital ICU Admission, Hospital ICU Confinement, Newborn Nursery Confinement) - each with a frequency + dollar amount (e.g. \"2 days per plan year at $1,000\"). Note: this document does not break out deductibles/OOP max - it's an indemnity (fixed-benefit) product, so deductible_individual/family and oop_max fields should be left blank/omitted - there are none.\n3. Third/fourth pages: \"General Information\" with Limitations and Exclusions list, Additional Information (policy amendment notice provisions), policy form series numbers (e.g. PLA-HI-POL23/PLA-HI-CERT23), and Producer Commission schedule (e.g. \"Year 1 - 50%; Year 2 - 5%; Year 3+ - 2.5%\").\n\nNo in-network/out-of-network split exists for this product (it's indemnity, paid regardless of network) - out_of_network field should be omitted.\n\nOther products in this same document (Dental, Vision, Life/AD&D, STD, Critical Illness, Accident) should be IGNORED per task instructions but follow similar per-product page-block patterns with their own rate tables and plan detail tables - useful to know for future tasks targeting those products specifically.\n\nTotal plans to extract for Hospital Indemnity product in this document: 1 (the \"High\" tier). If a future document shows multiple Hospital Indemnity tiers (e.g. Low/Medium/High) as separate named sections, each should be extracted as its own plan entry with its own full rate/benefit table.",
+  "product_type": "simple_tiered",
+  "benefit_line": "Hospital Indemnity",
+  "created_at": "2026-10-01T19:37:10.271695+00:00",
+  "updated_at": "2026-10-01T19:37:10.271710+00:00",
+  "times_used": 1
+}

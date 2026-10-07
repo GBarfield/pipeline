@@ -1,0 +1,21 @@
+{
+  "carrier_name": "Metropolitan Life Insurance Company (MetLife)",
+  "fingerprint": {
+    "must_contain": [
+      "Metropolitan Life Insurance Company",
+      "DN-GCERT-GOLD"
+    ],
+    "any_of": [
+      "GCERT Voluntary Dental Benefit Summary",
+      "Preferred Dentist Program",
+      "metdental.com",
+      "MyBenefits"
+    ]
+  },
+  "extraction_notes": "This is a MetLife Dental \"GCERT Voluntary Dental Benefit Summary\" document (form DN-GCERT-GOLD). It contains a single Dental product/plan design per document (only one plan/class shown here: Class 0001 - All Active Full-time Employee), though the doc may be part of a multi-product package (e.g., life/disability) - only extract the Dental product/pages.\n\nLayout:\n- Page 1: Coverage Type table with 4 rows (Type A-Preventive, Type B-Basic Restorative, Type C-Major Restorative, Type D-Orthodontia), each with In-Network % of PDP Fee and Out-of-Network % of PDP Fee columns (identical values in this sample - both based on 'PDP Fee' schedule, not usual/customary). Below that: Deductible (Individual/Family, applies only to Type B & C), Annual Maximum Benefit (Per Individual), and Orthodontia Lifetime Maximum (child-only, up to dependent age limit).\n- Page 2: 'IMPORTANT RATE INFORMATION' box with Monthly Premium Payment table - 4 tiers: Employee, Employee+Spouse, Employee+Child(ren), Employee+Family. Only one rate set per document (single plan). Also has enrollment/termination text - not needed for extraction.\n- Page 3: 'Selected Covered Services and Frequency Limitations' - detailed list of specific services under Type A, B, C headers with frequency limits (How Many/How Often column). Type D (Orthodontia) has bullet-point rules instead of a frequency table. Map these into the benefits object using service name as key and frequency as value.\n- Pages 4-5: Exclusions list (numbered 1-39) - general boilerplate, not needed for structured extraction.\n- Pages 6-7: FAQ boilerplate - not needed.\n- Page 8: CA language assistance notice - boilerplate, ignore.\n\nOnly one plan is present in this document (single plan_name, single rate table). If future documents from this carrier show multiple classes/plans (e.g., Class 0001, Class 0002), each would need its own full plans[] entry with its own benefits table and rates, since coverage %, deductibles, and rates could differ per class. No OON deductible/OOP max separate figures given beyond what's listed (OON uses same deductible amounts as in-network, no OOP max disclosed). No embedded/aggregate deductible language given - deductible values are flat individual/family amounts, not marked embedded/aggregate explicitly.",
+  "product_type": "simple_tiered",
+  "benefit_line": "Dental",
+  "created_at": "2026-09-08T02:14:31.282542+00:00",
+  "updated_at": "2026-09-08T02:14:31.282557+00:00",
+  "times_used": 1
+}

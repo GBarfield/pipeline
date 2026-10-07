@@ -1,0 +1,20 @@
+{
+  "carrier_name": "Pacific Life & Annuity Company",
+  "fingerprint": {
+    "must_contain": [
+      "Pacific Life & Annuity Company"
+    ],
+    "any_of": [
+      "Workforce Benefits Proposal",
+      "PacificLife.com/ratings",
+      "WB23-7C",
+      "Proposal ID: P"
+    ]
+  },
+  "extraction_notes": "This is a multi-product Pacific Life \"Workforce Benefits Proposal\" PDF (dental, vision, basic life/AD&D, voluntary life/AD&D, STD, critical illness, hospital indemnity, accident). For the Basic Life and AD&D product specifically (section titled \"Group Basic Term Life and AD&D Insurance\", typically ~page 13-14), extract only these 2 rows:\n1. A \"Rate Summary\" table near top of section with columns: Coverage | Lives | Estimated Volume | Monthly Rate Per $1,000. Rows are \"Basic Life\" and \"AD&D\" - these are the two flat-rate entries to extract (rate_per_unit = Monthly Rate Per $1,000 column).\n2. Below that, a \"Basic Life Plan - Employee Coverage\" table gives Class (usually just one class \"Class All\"), Class Description, Benefit Amount (flat dollar amount, e.g. $20,000), Guaranteed Issue, and Maximum Benefit - use this for benefit_amount_formula and guarantee_issue_max fields on the Basic Life row.\n3. A \"Basic AD&D Plan - Employee Coverage\" table states benefit amount equals Basic Life for that class - use same benefit amount for the AD&D row, with same guarantee issue (or note \"equals Basic Life\").\nEmployee contribution for Basic Life/AD&D is found in \"Class All Basic Life Plan Details\" table under \"Employee Contribution\" - typically \"Non-Contributory\" (100% employer paid).\nOnly one class (\"Class All\") was present in this document covering all eligible employees - confirm if future docs have multiple classes and extract each separately.\nDo NOT extract Voluntary Term Life/AD&D (separate age-banded section), STD (age-banded rate table), Dental, Vision, Critical Illness, Hospital Indemnity, or Accident products - those use different pricing structures (tiered or age-banded) and belong in other extraction schemas.\nDocument also has a cover page proposal ID (format P########), effective date, rate guarantee period, and situs state printed at top of each product section - capture effective_date from the Basic Life section header if needed.",
+  "product_type": "flat_rate_per_unit",
+  "benefit_line": "Basic Life and AD&D",
+  "created_at": "2026-10-01T19:35:33.087088+00:00",
+  "updated_at": "2026-10-01T19:35:33.087103+00:00",
+  "times_used": 1
+}
