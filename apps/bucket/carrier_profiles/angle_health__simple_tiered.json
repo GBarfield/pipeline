@@ -1,0 +1,21 @@
+{
+  "carrier_name": "Angle Health",
+  "fingerprint": {
+    "must_contain": [
+      "anglehealth.com",
+      "Angle Health"
+    ],
+    "any_of": [
+      "ANG HDHP",
+      "ANG TRAD",
+      "ANG VALUE",
+      "Quote ID:",
+      "BENLFUT"
+    ]
+  },
+  "extraction_notes": "Angle Health level-funded quote proposal, structured as a multi-page PDF. Layout: Page 1 cover page with group name & effective date. Page 2 'Rates' page has a Quote Details box (funding type, contract terms, enrollment, agency, population) and a summary rate grid table listing ALL plans with columns: plan name/deductible-oop numbers, Employee Only, Employee+Spouse, Employee+Children, Employee+Family, Actuarial Value. This grid may span 2 pages (page 2 continues onto page 3 as 'Rates (Continued)') - must combine both to get full plan list. In this doc there were 19 total plans listed in the rate grid (14 on page2, 5 more on page3).\n\nEach plan then gets its OWN detail page (starting page 4) titled 'PLANS' with the plan name as header, Plan ID, Quote ID. Each plan detail page has:\n- 'In-Network Deductibles' box: Deductible Individual, Deductible Family, OOPM Individual, OOPM Family (all 4 values in a highlighted band).\n- A 'Services' cost-share table with a FIXED set of ~19-20 benefit rows in this consistent order: Primary Care (Office), Specialist (Office), Virtual Care, Preventive Care, Urgent Care, Emergency Room, Inpatient Facility, Diagnostic Tests (X-Ray), Outpatient Facility, Outpatient Professional, Speech Therapy - OP Prof., Physical/Occupational Therapy - OP Prof., Independent Laboratory, Imaging - OP Facility, All Other Covered Services, Tier 1 - Generic RX, Tier 2 (Preferred Brand), Tier 3 (Non-Preferred Brand), Tier 4 (Specialty High-Cost), International Rx Sourcing. Each row has 'Cost Share' (either a $ copay or a % coinsurance or $0) and 'Deductible Applies' (Yes/No checkmark column) - combine these two into one string like \"$25 copay, no deductible\" or \"20% coinsurance, after deductible\".\n- 'Out of Network Deductibles' box: Deductible Individual OON, OOPM Individual OON, Deductible Family OON, OOPM Family OON, Coinsurance OON, Deductible Embedded (Yes/No).\n- 'Rates' box: Employee Only, Employee+Spouse, Employee+Child(ren), Employee+Family (note: no separate 'family' vs 'employee+child(ren)' distinction beyond these 4 standard tiers - map Employee+Child(ren) to employee_children and Employee+Family to family in schema).\n\nPlan IDs are non-sequential/inconsistent format (e.g. BENLFUT9001003, BENLFUT7001700, BENLFUT4003400) - just capture as given.\n\nThis document had 19 total plans, each with its own full-detail page (pages 4-22), all with identical benefit category structure - extract all 19 with equal completeness, do not abbreviate later ones.\n\nAfter the plan detail pages, document includes 'Funding Allocation' pages (Claims Fund, Stoploss Premium, Administrative Fee tables by plan/tier) - these are supplementary illustrative funding breakdowns of the premium, NOT additional plans/rates; do not record as separate plans. Then a 'Census Quoted in Proposal' listing of individual members (not needed for plan extraction). Then a 'Details' page with plan administration/eligibility terms (funding type ERISA Level-Funded, TPA Adrem Administrators, stop loss carrier Companion, contract terms) - useful for context but not per-plan data. Final pages are marketing/sales collateral about Angle Health company overview and cost-of-ownership projections - ignore for extraction purposes.\n\nCarrier name is always \"Angle Health\". Network shown as e.g. \"Cigna Network\" with PBM \"Cerpass AngleRx PBM\" - these are group-level, not plan-level, attributes noted in Quote Details box on page 2.",
+  "product_type": "simple_tiered",
+  "created_at": "2026-07-30T17:57:20.403769+00:00",
+  "updated_at": "2026-07-30T17:57:20.403785+00:00",
+  "times_used": 1
+}

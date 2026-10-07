@@ -1,0 +1,234 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model HealthCheck {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  SUPER_USER
+  BROKER_USER
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         Role
+  active       Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  brokerId Int?
+  broker   Broker? @relation(fields: [brokerId], references: [id])
+}
+
+model Carrier {
+  id               Int      @id @default(autoincrement())
+  name             String
+  contactFirstName String?
+  contactLastName  String?
+  address          String?
+  city             String?
+  state            String?  @db.VarChar(2)
+  zip              String?
+  phone            String?
+  email            String?
+  specialty        String?
+  logoImage        String?
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  brokers  Broker[]
+  products CarrierProduct[]
+  groups   Group[]
+}
+
+model Broker {
+  id             Int       @id @default(autoincrement())
+  firstName      String
+  lastName       String
+  address        String?
+  address2       String?
+  city           String?
+  state          String?   @db.VarChar(2)
+  zip            String?
+  phone          String?
+  email          String    @unique
+  passwordHash   String?
+  brokerType     String?
+  image          String?
+  isHouseAccount Boolean   @default(false)
+  archived       Boolean   @default(false)
+  loginSentAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  carrierId Int?
+  carrier   Carrier? @relation(fields: [carrierId], references: [id])
+
+  groups Group[]
+  users  User[]
+}
+
+model CarrierProduct {
+  id          Int      @id @default(autoincrement())
+  name        String
+  productType String?
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  carrierId Int
+  carrier   Carrier @relation(fields: [carrierId], references: [id])
+}
+
+model Group {
+  id               Int       @id @default(autoincrement())
+  company          String
+  contactFirstName String?
+  contactLastName  String?
+  address          String?
+  city             String?
+  state            String?   @db.VarChar(2)
+  zip              String?
+  phone            String?
+  email            String?
+  effectiveDate    DateTime? @db.Date
+  shortCode        String?
+  logoFile         String?
+  industry         String?
+  sicCode          String?
+  signatureType    String?
+  baseApp          String?
+  archived         Boolean   @default(false)
+  isIHQ            Boolean   @default(false)
+  hasPortal        Boolean   @default(false)
+  emailText        String?   @db.Text
+  zipFile          String?
+  completedApps    Int?      @default(0)
+  zipDate          DateTime? @db.Date
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  brokerId Int?
+  broker   Broker? @relation(fields: [brokerId], references: [id])
+  carrierId Int?
+  carrier   Carrier? @relation(fields: [carrierId], references: [id])
+  deals     Deal[]
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  quotes Quote[]
+  comparisonRowMappings ComparisonRowMapping[]
+}
+
+model Deal {
+  id            Int      @id @default(autoincrement())
+  groupId       Int
+  group         Group    @relation(fields: [groupId], references: [id])
+  name          String
+  effectiveDate DateTime? @db.Date
+  status        String   @default("open")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  quotes Quote[]
+  comparisonRowMappings ComparisonRowMapping[]
+}
+
+model Quote {
+  id            Int      @id @default(autoincrement())
+  dealId        Int
+  deal          Deal     @relation(fields: [dealId], references: [id])
+  productId     Int?
+  product       Product? @relation(fields: [productId], references: [id])
+  productLabel  String?
+  source        String
+  carrierName   String
+  productType   String
+  usedDiscovery Boolean  @default(false)
+  rawData       Json
+  warnings      Json?
+  supplement      Json?
+  planSelection Json?
+  xlsxPath        String?
+  originalPdfPath String?
+  excluded        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  corrections QuoteCorrection[]
+}
+
+model QuoteCorrection {
+  id              Int      @id @default(autoincrement())
+  quoteId         Int
+  quote           Quote    @relation(fields: [quoteId], references: [id])
+  previousQuoteId Int?
+  field           String
+  fromValue       String?
+  toValue         String?
+  reason          String?
+  createdAt       DateTime @default(now())
+}
+
+model ComparisonRowMapping {
+  id             Int      @id @default(autoincrement())
+  dealId         Int
+  deal           Deal     @relation(fields: [dealId], references: [id])
+  productId      Int
+  product        Product  @relation(fields: [productId], references: [id])
+  section        String
+  canonicalLabel String
+  aliasLabel     String
+  confirmedBy    String
+  createdAt      DateTime @default(now())
+
+  @@index([dealId, productId])
+  @@unique([dealId, productId, section, aliasLabel])
+}
+
+model Division {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique // stable machine key, e.g. "MARKETING" - set once at seed time, not user-editable
+  name      String            // display label, e.g. "Marketing" - what shows in the header/dropdown
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  appSettings AppSetting[]
+}
+
+// Singleton row (id is always 1) holding app-wide settings that aren't scoped to any one user.
+// Divisions is the only field today; this table exists so a second global setting later
+// doesn't need its own bespoke singleton pattern.
+model AppSetting {
+  id                Int      @id @default(1)
+  currentDivisionId Int
+  currentDivision   Division @relation(fields: [currentDivisionId], references: [id])
+  updatedAt         DateTime @updatedAt
+}

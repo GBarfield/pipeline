@@ -1,0 +1,19 @@
+{
+  "carrier_name": "Aetna",
+  "fingerprint": {
+    "must_contain": [
+      "Aetna",
+      "AFA QUOTE DETAILS",
+      "New Business AFA Medical Cost Grid"
+    ],
+    "any_of": [
+      "Aetna Funding Advantage",
+      "CPOS II",
+      "AFA CPOSII"
+    ]
+  },
+  "extraction_notes": "Aetna Small Group AFA (Aetna Funding Advantage, self-funded) new business proposal. Structure:\n- Page 2: cover/summary page with GROUP NAME, QUOTE #, EFFECTIVE DATE, broker info, stop loss details, table of contents.\n- Pages 3-10: 'New Business AFA Medical Cost Grid - Single Options' - THIS IS THE MAIN MEDICAL PLAN TABLE. In this Baker Farms doc there were 87 medical plans (CPOS II product line), each as one row in a continuous table spanning 8 pages. Columns are: Plan Name/Plan ID, Ded/Co-ins & PCP/SPEC RX (packed string like '$9100,100/0,0/0' plus a second line with Rx tier coinsurance like '3/10/50/80/20% up to 250/40% up to 500'), Network, EE, EE+SP, EE+CH, FAM, Total, Agg(Total), Stop Loss(Total), Admin(Total), TRO(Total). The rate columns show monthly premium with a parenthetical count of enrolled lives below each (e.g. '(11)') - ignore the parenthetical, it's census count not a rate. IMPORTANT: every single plan row (all ~87 in this doc) must be extracted as its own plan entry - do NOT stop after the first several just because they look similar; they differ by deductible, coinsurance %, and copay amounts encoded in the 'Ded/Co-ins,PCP/SPEC RX' column. Parse that column as: [deductible],[coins in/coins out],[PCP copay/Specialist copay]. Second line under it is Rx benefit tiers. This carrier does NOT give a clean per-benefit breakdown (no separate ER/urgent care/generic Rx tier $ amounts) - only deductible, coinsurance split, PCP/specialist copay, and Rx tier coinsurance string are available, so the 'benefits' map for each plan should just contain these fields (Deductible/Coinsurance, PCP/Specialist, Rx) rather than a long list of copays - this differs from carriers that give full benefit grids per plan.\n- Pages 11-13: 'New Business Dental Cost Grid' - separate table of ~30 dental PPO plans (Prev/Basic/Major %, deductible, max benefit, ortho coverage, in-network and OON columns), rates for EE/EE+SP/EE+CH/FAM/Total tiers only (no Agg/StopLoss/Admin/TRO columns since fully insured).\n- Page 15: Aetna Vision plans - 4 plans (E100/E130/E160/E200) each with 12-month and 24-month frame allowance options, laid out as a benefit-feature matrix (exam copay, frame allowance, lens copays, coatings) rather than a row-per-plan table. Rates given per tier (Self/Self+Spouse/Self+Child/Self+Family) x 12M/24M.\n- Pages 17-18: New Business Census Grid (employee/dependent demographic data) - not a plan, skip for plan extraction but can note for context.\n- Pages 19-25: Boilerplate caveats/legal disclaimers - no plan data.\nReminder: this document type can have 80+ medical plans in one continuous grid across many pages - a cheaper model MUST continue extracting every row through all pages of the grid, not just the first page's worth. Do the same full-completeness treatment for the separate Dental grid and Vision plans - they are distinct plan lists with their own benefit schemas (dental: Prev/Basic/Major coinsurance + deductible/max/ortho; vision: exam/frame/lens copays by tier).",
+  "created_at": "2026-07-28T19:28:04.422875+00:00",
+  "updated_at": "2026-07-28T19:28:04.422896+00:00",
+  "times_used": 1
+}

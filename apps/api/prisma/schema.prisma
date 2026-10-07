@@ -1,0 +1,614 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model HealthCheck {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  SUPER_USER
+  BROKER_USER
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         Role
+  active       Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  brokerId Int?
+  broker   Broker? @relation(fields: [brokerId], references: [id])
+
+  restrictedDivisionId Int?
+  restrictedDivision   Division? @relation(fields: [restrictedDivisionId], references: [id])
+
+  sentRfqs Rfq[]
+  rfqNotes RfqNote[]
+
+  sentGroupProposals GroupProposal[]
+  groupProposalNotes GroupProposalNote[]
+}
+
+model Carrier {
+  id               Int      @id @default(autoincrement())
+  name             String
+  contactFirstName String?
+  contactLastName  String?
+  address          String?
+  city             String?
+  state            String?  @db.VarChar(2)
+  zip              String?
+  phone            String?
+  email            String?
+  specialty        String?
+  logoImage        String?
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  brokers  Broker[]
+  products CarrierProduct[]
+  groups   Group[]
+  contacts CarrierContact[]
+  rfqs     Rfq[]
+}
+
+model Broker {
+  id             Int       @id @default(autoincrement())
+  firstName      String
+  lastName       String
+  companyName    String?
+  address        String?
+  address2       String?
+  city           String?
+  state          String?   @db.VarChar(2)
+  zip            String?
+  phone          String?
+  email          String    @unique
+  passwordHash   String?
+  brokerType     String?
+  image          String?
+  isHouseAccount Boolean   @default(false)
+  archived       Boolean   @default(false)
+  loginSentAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  carrierId Int?
+  carrier   Carrier? @relation(fields: [carrierId], references: [id])
+
+  groups Group[]
+  users  User[]
+}
+
+model CarrierProduct {
+  id          Int      @id @default(autoincrement())
+  name        String
+  productType String?
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  carrierId Int
+  carrier   Carrier @relation(fields: [carrierId], references: [id])
+}
+
+model Employee {
+  id      Int   @id @default(autoincrement())
+  groupId Int
+  group   Group @relation(fields: [groupId], references: [id])
+  employeeSsnHash  String
+  employeeSsnLast4 String?
+  employeeSsnPlaintext String?
+  firstName    String?
+  middleName   String?
+  lastName     String?
+  suffix       String?
+  preferredName String?
+  displayName  String?
+  fullName     String?
+  sex          String?
+  genderIdentity String?
+  dob          DateTime? @db.Date
+  age          Int?
+  maritalStatus String?
+  dateOfMarriage DateTime? @db.Date
+  usCitizen    String?
+  visaStatus   String?
+  veteranStatus String?
+  militaryReserveStatus String?
+  raceEthnicity String?
+  language     String?
+  driversLicenseNumber String?
+  office       String?
+  class        String?
+  payrollGroup String?
+  division     String?
+  department   String?
+  businessUnit String?
+  benefitWorkState String?
+  payrollWorkState String?
+  costCenter   String?
+  isCollectivelyBargained String?
+  jobTitle     String?
+  jobClassification String?
+  manager      String?
+  managerEmail String?
+  demographicChangeEffectiveDate DateTime? @db.Date
+  rawRow         Json
+  sourceFileName String
+  loadBatchId    String
+  loadedAt       DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  elections Election[]
+  benefitsDocumentEntries BenefitsDocumentEntry[]
+  @@unique([groupId, employeeSsnHash])
+  @@index([sourceFileName])
+}
+
+model Election {
+  id      Int   @id @default(autoincrement())
+  groupId Int
+  group   Group @relation(fields: [groupId], references: [id])
+  employeeId Int?
+  employee   Employee? @relation(fields: [employeeId], references: [id])
+  enrollmentType String?
+  plan String?
+  carrier String?
+  benefit String?
+  coverageLevel String?
+  startDate DateTime? @db.Date
+  startReason String?
+  endDate DateTime? @db.Date
+  endReason String?
+  declineReason String?
+  totalMonthlyEeCost Decimal? @db.Decimal(12,2)
+  totalMonthlyPlanCost Decimal? @db.Decimal(12,2)
+  eeMonthlyCost Decimal? @db.Decimal(12,2)
+  erMonthlyCost Decimal? @db.Decimal(12,2)
+  planMonthlyCost Decimal? @db.Decimal(12,2)
+  benefitAmount Decimal? @db.Decimal(14,2)
+  coveredPayrollAmount Decimal? @db.Decimal(14,2)
+  eePerPayCost Decimal? @db.Decimal(12,2)
+  erPerPayCost Decimal? @db.Decimal(12,2)
+  eligibleDate DateTime? @db.Date
+  enrolledOn DateTime? @db.Date
+  endedOn DateTime? @db.Date
+  lastUpdatedBy String?
+  lastUpdatedDate DateTime? @db.Date
+  pcpName String?
+  pcpId String?
+  pcpType String?
+  baseErCost Decimal? @db.Decimal(12,2)
+  pcpCurrentPatient String?
+  benefitAllowance Decimal? @db.Decimal(12,2)
+  pendingEeCost Decimal? @db.Decimal(12,2)
+  pendingBenefitAmount Decimal? @db.Decimal(14,2)
+  pendingCoveredPayrollAmount Decimal? @db.Decimal(14,2)
+  planPolicyNumber String?
+  carrierTobaccoOverride String?
+  enrolledBy String?
+  rawRow Json
+  groupNameRaw String
+  sourceFileName String
+  loadBatchId String
+  loadedAt DateTime @default(now())
+  @@index([groupId])
+  @@index([employeeId])
+  @@index([sourceFileName])
+  @@index([loadBatchId])
+}
+
+model Group {
+  employees Employee[]
+  elections Election[]
+  id               Int       @id @default(autoincrement())
+  company          String
+  contactFirstName String?
+  contactLastName  String?
+  address          String?
+  city             String?
+  state            String?   @db.VarChar(2)
+  zip              String?
+  phone            String?
+  email            String?
+  effectiveDate    DateTime? @db.Date
+  shortCode        String?
+  logoFile         String?
+  industry         String?
+  sicCode          String?
+  signatureType    String?
+  baseApp          String?
+  archived         Boolean   @default(false)
+  isIHQ            Boolean   @default(false)
+  hasPortal        Boolean   @default(false)
+  emailText        String?   @db.Text
+  zipFile          String?
+  completedApps    Int?      @default(0)
+  zipDate          DateTime? @db.Date
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  brokerId Int?
+  broker   Broker? @relation(fields: [brokerId], references: [id])
+  carrierId Int?
+  carrier   Carrier? @relation(fields: [carrierId], references: [id])
+  deals     Deal[]
+  commissionPeriods CommissionPeriod[]
+  commissionStatementEntries CommissionStatementEntry[]
+  benefitsDocumentEntries BenefitsDocumentEntry[]
+  contacts GroupContact[]
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  quotes Quote[]
+  comparisonRowMappings ComparisonRowMapping[]
+  censusEntries CensusEntry[]
+  commissionStatementEntries CommissionStatementEntry[]
+  benefitsDocumentEntries BenefitsDocumentEntry[]
+}
+
+model Deal {
+  id            Int      @id @default(autoincrement())
+  groupId       Int
+  group         Group    @relation(fields: [groupId], references: [id])
+  divisionId    Int
+  division      Division @relation(fields: [divisionId], references: [id])
+  name          String
+  effectiveDate DateTime? @db.Date
+  status        String   @default("open")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  quotes Quote[]
+  comparisonRowMappings ComparisonRowMapping[]
+  rfqs   Rfq[]
+  groupProposals GroupProposal[]
+}
+
+model Quote {
+  id            Int      @id @default(autoincrement())
+  dealId        Int
+  deal          Deal     @relation(fields: [dealId], references: [id])
+  productId     Int?
+  product       Product? @relation(fields: [productId], references: [id])
+  productLabel  String?
+  source        String
+  carrierName   String
+  productType   String
+  usedDiscovery Boolean  @default(false)
+  rawData       Json
+  warnings      Json?
+  supplement      Json?
+  planSelection Json?
+  xlsxPath        String?
+  originalPdfPath String?
+  excluded        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  corrections QuoteCorrection[]
+}
+
+model QuoteCorrection {
+  id              Int      @id @default(autoincrement())
+  quoteId         Int
+  quote           Quote    @relation(fields: [quoteId], references: [id])
+  previousQuoteId Int?
+  field           String
+  fromValue       String?
+  toValue         String?
+  reason          String?
+  createdAt       DateTime @default(now())
+}
+
+model ComparisonRowMapping {
+  id             Int      @id @default(autoincrement())
+  dealId         Int
+  deal           Deal     @relation(fields: [dealId], references: [id])
+  productId      Int
+  product        Product  @relation(fields: [productId], references: [id])
+  section        String
+  canonicalLabel String
+  aliasLabel     String
+  confirmedBy    String
+  createdAt      DateTime @default(now())
+
+  @@index([dealId, productId])
+  @@unique([dealId, productId, section, aliasLabel])
+}
+
+model Division {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique // stable machine key, e.g. "MARKETING" - set once at seed time, not user-editable
+  name      String            // display label, e.g. "Marketing" - what shows in the header/dropdown
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  appSettings AppSetting[]
+  deals Deal[]
+  commissionPeriods CommissionPeriod[]
+  restrictedUsers User[]
+  benefitsDocumentUploads BenefitsDocumentUpload[]
+  benefitsDocumentEntries BenefitsDocumentEntry[]
+}
+
+// Singleton row (id is always 1) holding app-wide settings that aren't scoped to any one user.
+// Divisions is the only field today; this table exists so a second global setting later
+// doesn't need its own bespoke singleton pattern.
+model AppSetting {
+  id                Int      @id @default(1)
+  currentDivisionId Int
+  currentDivision   Division @relation(fields: [currentDivisionId], references: [id])
+  updatedAt         DateTime @updatedAt
+}
+
+model CommissionPeriod {
+  id          Int      @id @default(autoincrement())
+  groupId     Int
+  group       Group    @relation(fields: [groupId], references: [id])
+  divisionId  Int
+  division    Division @relation(fields: [divisionId], references: [id])
+  periodMonth DateTime @db.Date
+  label       String
+  status      String   @default("open")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  censusEntries     CensusEntry[]
+
+  @@unique([groupId, periodMonth])
+}
+
+model CensusEntry {
+  id           Int      @id @default(autoincrement())
+  periodId     Int
+  period       CommissionPeriod @relation(fields: [periodId], references: [id])
+  sourceFile   String
+  employeeName String
+  carrierName  String
+  productId    Int?
+  product      Product? @relation(fields: [productId], references: [id])
+  productLabel String?
+  planName     String?
+  coverageTier String?
+  premium      Decimal  @db.Decimal(10,2)
+  rawRow       Json
+  createdAt    DateTime @default(now())
+}
+
+model CommissionStatementEntry {
+  id               Int      @id @default(autoincrement())
+  uploadId         Int
+  upload           CommissionStatementUpload @relation(fields: [uploadId], references: [id])
+  groupId          Int?
+  group            Group?   @relation(fields: [groupId], references: [id])
+  companyNameRaw   String?
+  sourceFile       String
+  carrierName      String
+  productId        Int?
+  product          Product? @relation(fields: [productId], references: [id])
+  productLabel     String?
+  statementPeriodStart DateTime? @db.Date
+  statementPeriodEnd   DateTime? @db.Date
+  reportedPremium  Decimal  @db.Decimal(10,2)
+  commissionAmount Decimal? @db.Decimal(10,2)
+  rawRow           Json
+  createdAt        DateTime @default(now())
+}
+
+model CommissionStatementUpload {
+  id             Int      @id @default(autoincrement())
+  sourceFile     String
+  carrierNameRaw String?
+  uploadedAt     DateTime @default(now())
+  status         String   @default("processed")
+
+  entries        CommissionStatementEntry[]
+}
+
+model ReconciliationFilter {
+  id           Int      @id @default(autoincrement())
+  name         String
+  carrierNames String[]
+  productIds   Int[]
+  groupIds     Int[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// Benefits Administration document bucket - eligibility rosters, enrollment
+// confirmations, invoices. Same company-agnostic shape as
+// CommissionStatementUpload/Entry (groupId lives on the entry, not the
+// upload - one file can span multiple companies), but unlike
+// CommissionStatementEntry, this IS division-stamped from day one: Benefits
+// Administration is exactly the division the division-scoping work
+// (tabular-mapping-port-and-reconciliation-v2-ui-design.md) was built ahead
+// of, since it will hold more sensitive data than Marketing or Accounting.
+model BenefitsDocumentUpload {
+  id           Int      @id @default(autoincrement())
+  sourceFile   String
+  divisionId   Int
+  division     Division @relation(fields: [divisionId], references: [id])
+  documentType String?  // "eligibility_roster" | "enrollment_confirmation" | "invoice" | null if unclassified
+  uploadedAt   DateTime @default(now())
+  status       String   @default("processed")
+
+  entries      BenefitsDocumentEntry[]
+}
+
+model BenefitsDocumentEntry {
+  id              Int      @id @default(autoincrement())
+  uploadId        Int
+  upload          BenefitsDocumentUpload @relation(fields: [uploadId], references: [id])
+  divisionId      Int
+  division        Division @relation(fields: [divisionId], references: [id])
+  groupId         Int?
+  group           Group?   @relation(fields: [groupId], references: [id])
+  companyNameRaw  String?
+  employeeSsnHash      String?
+  employeeId           Int?
+  employee             Employee? @relation(fields: [employeeId], references: [id])
+  carrierNameConfirmed Boolean  @default(true)
+  employeeMonthlyCost  Decimal? @db.Decimal(12,2)
+  employeePerPayCost   Decimal? @db.Decimal(12,2)
+  employerMonthlyCost  Decimal? @db.Decimal(12,2)
+  benefitAmount        Decimal? @db.Decimal(14,2)
+  coveredPayrollAmount Decimal? @db.Decimal(14,2)
+  @@index([employeeSsnHash])
+  sourceFile      String
+  employeeName    String?
+  carrierName     String
+  productId       Int?
+  product         Product? @relation(fields: [productId], references: [id])
+  productLabel    String?
+  planName        String?
+  coverageTier    String?
+  effectiveDate   DateTime? @db.Date
+  terminationDate DateTime? @db.Date
+    status          String?   // as reported by the document (e.g. "active"/"termed") - free text until real values are observed, same caveat as Election.enrollmentType
+  rawRow          Json
+  createdAt       DateTime @default(now())
+}
+
+model CarrierContact {
+  id        Int      @id @default(autoincrement())
+  carrierId Int
+  carrier   Carrier  @relation(fields: [carrierId], references: [id])
+  name      String
+  title     String?
+  email     String
+  phone     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rfqs      Rfq[]
+}
+
+model Rfq {
+  id               Int             @id @default(autoincrement())
+  dealId           Int
+  deal             Deal            @relation(fields: [dealId], references: [id])
+  carrierId        Int
+  carrier          Carrier         @relation(fields: [carrierId], references: [id])
+  carrierContactId Int?
+  carrierContact   CarrierContact? @relation(fields: [carrierContactId], references: [id])
+  productIds       Int[]
+  subject          String
+  body             String          @db.Text
+  status           String          @default("draft")
+  statusNote       String?
+  statusUpdatedAt  DateTime?
+  sentAt           DateTime?
+  sentByUserId     Int?
+  sentByUser       User?           @relation(fields: [sentByUserId], references: [id])
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  attachments      RfqAttachment[]
+  notes            RfqNote[]
+}
+
+model RfqAttachment {
+  id        Int      @id @default(autoincrement())
+  rfqId     Int
+  rfq       Rfq      @relation(fields: [rfqId], references: [id])
+  fileName  String
+  filePath  String
+  source    String
+  createdAt DateTime @default(now())
+}
+
+model RfqNote {
+  id        Int      @id @default(autoincrement())
+  rfqId     Int
+  rfq       Rfq      @relation(fields: [rfqId], references: [id])
+  authorId  Int
+  author    User     @relation(fields: [authorId], references: [id])
+  note      String   @db.Text
+  createdAt DateTime @default(now())
+}
+
+model GroupContact {
+  id        Int      @id @default(autoincrement())
+  groupId   Int
+  group     Group    @relation(fields: [groupId], references: [id])
+  name      String
+  title     String?
+  email     String
+  phone     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  proposals GroupProposal[]
+}
+
+model GroupProposal {
+  id              Int                       @id @default(autoincrement())
+  dealId          Int
+  deal            Deal                      @relation(fields: [dealId], references: [id])
+  groupContactId  Int?
+  groupContact    GroupContact?             @relation(fields: [groupContactId], references: [id])
+  productIds      Int[]
+  subject         String
+  body            String                    @db.Text
+  status          String                    @default("draft")
+  statusNote      String?
+  statusUpdatedAt DateTime?
+  sentAt          DateTime?
+  sentByUserId    Int?
+  sentByUser      User?                     @relation(fields: [sentByUserId], references: [id])
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  attachments     GroupProposalAttachment[]
+  notes           GroupProposalNote[]
+}
+
+model GroupProposalAttachment {
+  id              Int           @id @default(autoincrement())
+  groupProposalId Int
+  groupProposal   GroupProposal @relation(fields: [groupProposalId], references: [id])
+  fileName        String
+  filePath        String
+  source          String
+  createdAt       DateTime      @default(now())
+}
+
+model GroupProposalNote {
+  id              Int           @id @default(autoincrement())
+  groupProposalId Int
+  groupProposal   GroupProposal @relation(fields: [groupProposalId], references: [id])
+  authorId        Int
+  author          User          @relation(fields: [authorId], references: [id])
+  note            String        @db.Text
+  createdAt       DateTime      @default(now())
+}

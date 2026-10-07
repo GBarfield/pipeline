@@ -1,0 +1,21 @@
+{
+  "carrier_name": "MetLife (Metropolitan Life Insurance Company)",
+  "fingerprint": {
+    "must_contain": [
+      "MetLife",
+      "Metropolitan Life Insurance Company",
+      "200 Park Ave., New York, NY 10166"
+    ],
+    "any_of": [
+      "GCERT Voluntary Dental Benefit Summary",
+      "Preferred Dentist Program",
+      "PDP Fee",
+      "DN-GCERT"
+    ]
+  },
+  "extraction_notes": "This is a MetLife DENTAL benefit summary (not medical). Document structure: Page 1 has the main benefit summary table with \"Coverage Type\" rows (Type A - Preventive, Type B - Basic Restorative, Type C - Major Restorative, Type D - Orthodontia) each showing % of PDP Fee for In-Network and Out-of-Network (in this sample document these percentages were identical in and out of network, but always check both columns as some documents may show a difference). Also on page 1: Deductible (Individual/Family, applies only to Type B & C), Annual Maximum Benefit per individual, and Orthodontia Lifetime Maximum (child-only, up to dependent age limit). Page 2 has the \"IMPORTANT RATE INFORMATION\" table with Monthly Premium Payment by tier: Employee, Employee + Spouse, Employee + Child(ren), Employee + Family - these map to employee_only/employee_spouse/employee_children/family in the standard schema. Page 3 has \"Selected Covered Services and Frequency Limitations\" - a detailed list of specific procedures under each Type (A/B/C/D) with frequency limits (e.g., \"1 in 6 months\") - useful for populating more granular benefit line items if desired, but the core plan design is the % coverage by Type A-D from page 1. Pages 4-5 are standard exclusions boilerplate (not plan-specific data). Pages 6-7 are FAQ boilerplate. Page 8 is a California language assistance notice (boilerplate, ignore).\n\nIMPORTANT: This particular document only contains ONE dental plan design (Gold PPO) for ONE group/class (Bartel Communications, Class 0001). Unlike medical proposals, MetLife dental summaries of this type often quote just a single plan/tier structure per class. If a future document shows multiple classes or multiple plan design tables (e.g., a \"Class 0002\" or a second Coverage Type table with different % or deductible values), treat each as its own separate plan entry with its own full benefits object (Type A-D percentages, deductible, annual max, ortho max, and rates table) - do not assume all plans share identical values just because the layout repeats. Also note there is no OOP max or medical-style copay structure in this dental plan - deductible and coinsurance % by service type is the core cost-share mechanism, plus an annual maximum benefit cap (unlike medical unlimited OOP protection).",
+  "created_at": "2026-07-28T19:47:08.392131+00:00",
+  "updated_at": "2026-07-30T18:01:53.434437+00:00",
+  "times_used": 3,
+  "product_type": "simple_tiered"
+}

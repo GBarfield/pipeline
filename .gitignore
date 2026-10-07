@@ -1,0 +1,22 @@
+node_modules/
+dist/
+.env
+apps/api/uploads/
+apps/bucket/__pycache__/
+apps/bucket/**/__pycache__/
+apps/bucket/uploads/
+apps/bucket/output/
+apps/api/logs/
+
+# Backups and secrets
+*.bak
+.env.*
+!.env.example
+
+# Python caches / local data
+__pycache__/
+apps/bucket/uploads/
+apps/bucket/output/
+
+# Stray files
+New Text Document.txt

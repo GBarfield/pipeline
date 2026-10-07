@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BenAdmin Quote Parser</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 720px; margin: 60px auto; color: #1a1a2e; }
+  h1 { font-size: 22px; }
+  p.sub { color: #555; margin-top: -8px; }
+  #controls { margin-top: 24px; }
+  #controls label { font-size: 13px; font-weight: bold; color: #444; display: block; margin-bottom: 4px; }
+  #productType { font-size: 14px; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; width: 100%; max-width: 360px; background: white; }
+  #productType:disabled { background: #f0f0f0; color: #999; }
+  #bucket {
+    margin-top: 16px;
+    border: 2px dashed #8c7ae6;
+    border-radius: 12px;
+    padding: 60px 20px;
+    text-align: center;
+    color: #6c4fd6;
+    background: #f7f5ff;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  #bucket.dragover { background: #ece6ff; }
+  #bucket.busy { cursor: default; border-color: #b7a9ec; background: #f2effc; }
+  #bucket input { display: none; }
+
+  /* Spinner shown while a file is processing */
+  #spinner {
+    display: none;
+    width: 30px;
+    height: 30px;
+    margin: 0 auto 14px;
+    border: 4px solid #d9d0f7;
+    border-top-color: #6c4fd6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  #bucket.busy #spinner { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #status { margin-top: 20px; white-space: pre-line; font-size: 14px; color: #333; }
+  #result { margin-top: 20px; padding: 16px; border-radius: 8px; background: #f0fff4; border: 1px solid #b7ebc6; display: none; }
+  #result a { color: #1a7f37; font-weight: bold; }
+  #warnings { margin-top: 20px; padding: 16px; border-radius: 8px; background: #fff8e6; border: 1px solid #f0d78c; display: none; color: #7a5b00; white-space: pre-line; font-size: 13px; }
+  #warnings strong { display: block; margin-bottom: 6px; }
+  #error { margin-top: 20px; padding: 16px; border-radius: 8px; background: #fff0f0; border: 1px solid #f5b7b7; display: none; color: #8a1c1c; }
+</style>
+</head>
+<body>
+  <h1>Drop a proposal</h1>
+  <p class="sub">Any carrier's quote PDF. Known carriers process instantly and cheap; new ones get figured out and remembered.</p>
+
+  <div id="controls">
+    <label for="productType">Product type</label>
+    <select id="productType">
+      <option value="" selected disabled>Choose a product type&hellip;</option>
+      <option value="simple_tiered">Simple Tiered (Medical / Dental / Vision)</option>
+      <option value="age_banded">Age-Banded (Life / AD&amp;D / Critical Illness)</option>
+    </select>
+  </div>
+
+  <div id="bucket">
+    <div id="spinner"></div>
+    <div id="bucketLabel">Drop a PDF here, or click to choose one</div>
+    <input type="file" id="fileInput" accept="application/pdf">
+  </div>
+
+  <div id="status"></div>
+  <div id="result">
+    <div id="resultSummary"></div>
+    <a id="downloadLink" href="#">Download comparison spreadsheet</a>
+  </div>
+  <div id="warnings"></div>
+  <div id="error"></div>
+
+  <script>
+    const productTypeEl = document.getElementById('productType');
+    const bucket = document.getElementById('bucket');
+    const bucketLabel = document.getElementById('bucketLabel');
+    const fileInput = document.getElementById('fileInput');
+    const statusEl = document.getElementById('status');
+    const resultEl = document.getElementById('result');
+    const warningsEl = document.getElementById('warnings');
+    const errorEl = document.getElementById('error');
+
+    let busy = false;
+
+    bucket.addEventListener('click', () => { if (!busy) fileInput.click(); });
+
+    ['dragenter', 'dragover'].forEach(evt =>
+      bucket.addEventListener(evt, e => { e.preventDefault(); if (!busy) bucket.classList.add('dragover'); })
+    );
+    ['dragleave', 'drop'].forEach(evt =>
+      bucket.addEventListener(evt, e => { e.preventDefault(); bucket.classList.remove('dragover'); })
+    );
+    bucket.addEventListener('drop', e => {
+      if (busy) return;
+      const file = e.dataTransfer.files[0];
+      if (file) uploadFile(file);
+    });
+    fileInput.addEventListener('change', () => {
+      if (!busy && fileInput.files[0]) uploadFile(fileInput.files[0]);
+    });
+
+    function setBusy(isBusy, label) {
+      busy = isBusy;
+      bucket.classList.toggle('busy', isBusy);
+      bucketLabel.textContent = label;
+      fileInput.disabled = isBusy;
+      productTypeEl.disabled = isBusy;
+    }
+
+    async function uploadFile(file) {
+      // Require an explicit product-type choice every time - this is the
+      // #1 fix for "I dropped a file without changing the box back."
+      // There is no default selection anymore, so a stale choice from a
+      // previous run can't silently carry over.
+      if (!productTypeEl.value) {
+        errorEl.textContent = 'Pick a product type first, then drop the PDF.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      resultEl.style.display = 'none';
+      warningsEl.style.display = 'none';
+      errorEl.style.display = 'none';
+
+      const productLabel = productTypeEl.options[productTypeEl.selectedIndex].text;
+      setBusy(true, `Processing ${file.name} as ${productLabel}…`);
+      statusEl.textContent = 'Uploading and reading the document…';
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('product_type', productTypeEl.value);
+
+      try {
+        const res = await fetch('/upload', { method: 'POST', body: formData });
+
+        let body;
+        try {
+          body = await res.json();
+        } catch (parseErr) {
+          // The server responded, but not with JSON - most often means the
+          // login prompt or an infrastructure error page came back instead
+          // of the app's own response. Surface that plainly rather than
+          // silently failing.
+          throw new Error(`Server returned an unexpected response (status ${res.status}, not JSON).`);
+        }
+
+        // Show whatever progress log we have either way - it's useful
+        // for diagnosing a failure, not just for celebrating success.
+        statusEl.textContent = (body.log || []).join('\n');
+
+        if (!res.ok) {
+          errorEl.textContent = body.error || 'Something went wrong.';
+          errorEl.style.display = 'block';
+          return;
+        }
+
+        document.getElementById('resultSummary').textContent =
+          `${body.carrier || 'Unknown carrier'} — ${body.group || 'Unknown group'} — ${body.plan_count} item(s)` +
+          (body.used_discovery ? ' (new carrier profile learned)' : ' (known carrier, cheap path)');
+        document.getElementById('downloadLink').href = body.download_url;
+        resultEl.style.display = 'block';
+
+        if (body.warnings && body.warnings.length) {
+          warningsEl.innerHTML = '<strong>Double-check before sending this out:</strong>' +
+            body.warnings.map(w => '- ' + w).join('\n');
+          warningsEl.style.display = 'block';
+        }
+      } catch (err) {
+        errorEl.textContent = 'Upload failed: ' + err.message;
+        errorEl.style.display = 'block';
+      } finally {
+        setBusy(false, 'Drop a PDF here, or click to choose one');
+        fileInput.value = '';
+        // Force a deliberate re-choice before the next file, rather than
+        // silently reusing whatever was selected for this one.
+        productTypeEl.selectedIndex = 0;
+      }
+    }
+ </script>
+
+<!-- ===== TEMPORARY TRIAGE PANEL — safe to delete this whole block ===== -->
+<hr style="margin: 48px 0 24px; border: none; border-top: 1px solid #ddd;">
+
+<h1 style="font-size: 18px;">Triage (temporary)</h1>
+<p class="sub">
+  Drop PDFs here to see what the system thinks they are — no product type needed first,
+  nothing gets saved as a real quote or carrier profile. Built to shake out edge cases
+  before the multi-product / benefit-line rework.
+</p>
+
+<div id="triageBucket" style="margin-top:16px; border: 2px dashed #d68910; border-radius: 12px; padding: 30px 20px; text-align: center; color: #b9770e; background: #fef9e7; cursor: pointer;">
+  <div id="triageLabel">Drop PDFs here (one at a time or in quick succession)</div>
+  <input type="file" id="triageFileInput" accept="application/pdf" style="display:none;">
+</div>
+
+<table id="triageTable" style="margin-top: 20px; width: 100%; border-collapse: collapse; font-size: 13px; display:none;">
+  <thead>
+    <tr style="text-align:left; border-bottom: 2px solid #ccc;">
+      <th style="padding:6px 8px;">File</th>
+      <th style="padding:6px 8px;">Multi?</th>
+      <th style="padding:6px 8px;">Carrier</th>
+      <th style="padding:6px 8px;">Product</th>
+      <th style="padding:6px 8px;">Rates?</th>
+      <th style="padding:6px 8px;">Rate Type</th>
+      <th style="padding:6px 8px;">Matched Profile</th>
+      <th style="padding:6px 8px;">Notes</th>
+    </tr>
+  </thead>
+  <tbody id="triageTableBody"></tbody>
+</table>
+
+<script>
+(function() {
+  const triageBucket = document.getElementById('triageBucket');
+  const triageLabel = document.getElementById('triageLabel');
+  const triageFileInput = document.getElementById('triageFileInput');
+  const triageTable = document.getElementById('triageTable');
+  const triageTableBody = document.getElementById('triageTableBody');
+
+  let triageBusy = false;
+  const queue = [];
+
+  triageBucket.addEventListener('click', () => triageFileInput.click());
+  ['dragenter', 'dragover'].forEach(evt =>
+    triageBucket.addEventListener(evt, e => e.preventDefault())
+  );
+  triageBucket.addEventListener('drop', e => {
+    e.preventDefault();
+    Array.from(e.dataTransfer.files || []).forEach(queueTriage);
+  });
+  triageFileInput.addEventListener('change', () => {
+    Array.from(triageFileInput.files || []).forEach(queueTriage);
+    triageFileInput.value = '';
+  });
+
+  function queueTriage(file) {
+    if (!file.name.toLowerCase().endsWith('.pdf')) return;
+    queue.push(file);
+    processQueue();
+  }
+
+  async function processQueue() {
+    if (triageBusy || queue.length === 0) return;
+    triageBusy = true;
+    const file = queue.shift();
+    triageLabel.textContent = `Classifying ${file.name}… (${queue.length} more queued)`;
+
+    const row = addRow(file.name, 'working…');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/triage', { method: 'POST', body: formData });
+      let body;
+      try {
+        body = await res.json();
+      } catch {
+        throw new Error(`Server returned a non-JSON response (status ${res.status}).`);
+      }
+      if (!res.ok) {
+        fillRowError(row, body.error || 'Failed');
+      } else {
+        fillRow(row, body);
+      }
+    } catch (err) {
+      fillRowError(row, err.message);
+    }
+
+    triageBusy = false;
+    triageLabel.textContent = 'Drop PDFs here (one at a time or in quick succession)';
+    processQueue();
+  }
+
+  function addRow(filename, status) {
+    triageTable.style.display = 'table';
+    const tr = document.createElement('tr');
+    tr.dataset.filename = filename;
+    tr.style.borderBottom = '1px solid #eee';
+    tr.innerHTML = `<td style="padding:6px 8px; vertical-align:top;">${escapeHtml(filename)}</td>
+      <td colspan="7" style="padding:6px 8px; color:#888;">${escapeHtml(status)}</td>`;
+    triageTableBody.prepend(tr);
+    return tr;
+  }
+
+  function fillRowError(tr, message) {
+    tr.innerHTML = `<td style="padding:6px 8px; vertical-align:top;">${escapeHtml(tr.dataset.filename)}</td>
+      <td colspan="7" style="padding:6px 8px; color:#c0392b;">Error: ${escapeHtml(message)}</td>`;
+  }
+
+  function fillRow(tr, body) {
+    const c = body.classification || {};
+    const products = (c.products && c.products.length)
+      ? c.products
+      : [{ product_label: '(none reported)', rates_present: null, rate_type: null }];
+    const pm = body.profile_matches || {};
+    const matchSummary = Object.entries(pm)
+      .filter(([, v]) => v.matched)
+      .map(([pt, v]) => `${pt}: ${v.profile_file}`)
+      .join(', ') || 'no match (either type)';
+
+    tr.outerHTML = products.map((p, i) => `
+      <tr style="border-bottom: 1px solid #eee; ${i > 0 ? 'background:#fafafa;' : ''}">
+        ${i === 0 ? `<td style="padding:6px 8px; vertical-align:top;" rowspan="${products.length}">${escapeHtml(body.filename)}</td>` : ''}
+        ${i === 0 ? `<td style="padding:6px 8px; vertical-align:top;" rowspan="${products.length}">${c.is_multi_product ? 'Multi' : 'Single'}</td>` : ''}
+        ${i === 0 ? `<td style="padding:6px 8px; vertical-align:top;" rowspan="${products.length}">${escapeHtml(c.carrier_name || '?')}</td>` : ''}
+        <td style="padding:6px 8px;">${escapeHtml(p.product_label || '?')}</td>
+        <td style="padding:6px 8px;">${p.rates_present === true ? 'Y' : (p.rates_present === false ? 'N' : '?')}</td>
+        <td style="padding:6px 8px;">${escapeHtml(p.rate_type || '?')}</td>
+        ${i === 0 ? `<td style="padding:6px 8px; vertical-align:top;" rowspan="${products.length}">${escapeHtml(matchSummary)}</td>` : ''}
+        ${i === 0 ? `<td style="padding:6px 8px; vertical-align:top;" rowspan="${products.length}">${escapeHtml(c.notes || '')}</td>` : ''}
+      </tr>
+    `).join('');
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, m => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]
+    ));
+  }
+})();
+</script>
+<!-- ===== END TEMPORARY TRIAGE PANEL ===== -->
+</body>
+</html>

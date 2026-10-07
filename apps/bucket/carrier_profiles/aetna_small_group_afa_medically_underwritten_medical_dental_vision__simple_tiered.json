@@ -1,0 +1,22 @@
+{
+  "carrier_name": "Aetna (Small Group AFA/Medically Underwritten - Medical, Dental, Vision)",
+  "fingerprint": {
+    "must_contain": [
+      "aetna",
+      "AFA QUOTE DETAILS",
+      "New Business AFA Medical Cost Grid",
+      "Quote ID"
+    ],
+    "any_of": [
+      "AFA CPOSII",
+      "Aetna Funding Advantage",
+      "New Business Dental Cost Grid",
+      "Aetna Vision"
+    ]
+  },
+  "extraction_notes": "This is an Aetna Small Group new business proposal (Medically Underwritten / Aetna Funding Advantage - AFA, self-funded with stop loss) for group BAKER FARMS, Quote #17344292, eff 06/01/26-06/01/27.\n\nSTRUCTURE:\n1. Pages 3-10: 'New Business AFA Medical Cost Grid - Single Options' - a single large table (spans 8 pages, ~89 medical plan rows total, all CPOS II network). Columns: Plan Name (with Plan ID below it), Ded/Co-ins & PCP/SPEC RX string (format: $Deductible,Coins%In/Coins%Out,PCPcopay/SPECcopay + Rx tier structure like '3/10/50/80/20% up to 250/40% up to 500'), Network (always CPOS II), EE/EE+SP/EE+CH/FAM monthly rates (each with a parenthetical count of enrolled members e.g. '(11)' - these counts are census-based multipliers, NOT part of the rate - extract only the dollar rate), Total (total group premium + count), then Agg/Stop Loss/Admin/TRO totals (self-funded funding components, not needed in standard schema but could be captured as extra notes if desired). Each plan is one row; there is NO per-benefit detail breakdown (no separate ER/PCP copay lines) - only the compact Ded/Coins string. So the 'benefits' map should just capture the raw Ded/Co-ins string, PCP/SPEC RX string, and Network - do not invent detailed benefit categories since none are given beyond this compact code. Extract ALL rows (~89 plans) - do not truncate; this carrier's hallmark is a VERY long single-option medical grid.\n\n2. Pages 11-13: 'New Business Dental Cost Grid' - similar single wide table, ~54 dental plan rows (PPO network), many are 'Vol' (voluntary) vs non-Vol duplicate pairs with identical rates - still record each row separately as they are distinct plan/ID combos. Columns: Plan Name/Plan ID, In-Network Benefits (Prev/Basic/Major %, Ded/Max Benefit/Ortho), OON Benefits (Ded/Max/Ortho), Network, EE/EE+SP/EE+CH/FAM/Total rates (with same census-count parentheticals to ignore).\n\n3. Pages 15-16: 'Aetna Vision Preferred Small Group Plans' - 4 plans (E100/E130/E160/E200), each with TWO rate options (12-month vs 24-month frame frequency) shown as separate columns per tier. Also has a detailed per-benefit-feature table below (Exam, Frame, Standard/Premium lenses, lens options, contacts) applicable across the 4 plans - extract this benefit detail into the benefits map, and capture both 12M and 24M rate variants as separate keys within benefits since schema only allows one 'rates' object per plan (use 12M as primary rates, note 24M in benefits notes).\n\n4. Pages 17-18: Census grid listing employees/dependents with demographics - not a plan/rate table, skip for quote extraction (or use only to confirm group size = 20 eligible).\n\n5. Pages 19-25: Caveats/legal/underwriting assumption boilerplate - no plan data.\n\nQUIRKS: No deductible_family, oop_max figures, or out_of_network cost-share disclosed explicitly for medical plans beyond the compact code embedded in 'Ded/Co-ins' string - do not fabricate. Rate tiers offered are always EE, EE+Spouse, EE+Child(ren), Family (no separate 2-tier variants). Broker fee PEPM $40 and stop-loss/admin/TRO figures appear per medical plan - these are funding/administrative totals for the whole group (20 lives), not per-member premium; can be omitted from standard schema output. Always verify total plan count matches page count (medical ~89, dental ~54, vision 4) before finalizing - do not truncate lists just because they are long/repetitive.",
+  "product_type": "simple_tiered",
+  "created_at": "2026-07-29T18:56:34.687427+00:00",
+  "updated_at": "2026-07-29T18:56:34.687445+00:00",
+  "times_used": 1
+}

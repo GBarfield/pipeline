@@ -1,0 +1,22 @@
+{
+  "carrier_name": "MetLife",
+  "fingerprint": {
+    "must_contain": [
+      "MetLife",
+      "Group Hospital Indemnity Insurance",
+      "Metropolitan Life Insurance Company"
+    ],
+    "any_of": [
+      "Continuation of Insurance with Premium Payment",
+      "GPNP12-AX",
+      "GPNP13-HI",
+      "GPNP16-HI",
+      "Hospital Indemnity Insurance Exclusions and Limitations"
+    ]
+  },
+  "extraction_notes": "This is a MetLife Group Hospital Indemnity Insurance proposal (not a medical/dental/vision plan). Layout:\n- Page 1: cover page with group name (employer), product type, proposal date, valid-until date, and proposed effective date.\n- Page 2-3: \"Proposal Assumptions\" table with Situs State, SIC code, Number of Eligible Employees, Employee Eligibility rules, Takeover status, Contributions (e.g. 100% Employee Paid), Commissions.\n- Page 4: \"Plan Design\" table describing Coverage Type (Sickness/Accident 24hr), Benefit Amount (usually single Guaranteed Issue plan - only ONE plan/product is typically offered per proposal, unlike medical proposals with multiple tiers), Underwriting Offer, Pre-existing Condition Limitation, Complications of Pregnancy, Routine Childbirth, Portability provisions.\n- Page 5: \"Rate Information\" table (rate structure - typically Composite Rates, rate guarantee period, policy/rate change conditions, participation requirements) followed by \"Proposed Rates Plan\" table with Monthly premium by tier: Employee Only, Employee + Spouse, Employee + Children, Employee + Spouse/Children (maps to employee_only, employee_spouse, employee_children, family in schema).\n- Page 6: \"Covered Benefits\" - Hospital Benefits table with Subcategory (Admission Benefit, Confinement Benefit), Benefit Limits (e.g. 1x per calendar year, 31 days per calendar year), Benefit name (Admission, ICU Supplemental Admission, Confinement, ICU Supplemental Confinement), and Plan dollar amount column. This is the ONLY benefits detail table - there is no deductible/OOP max/coinsurance structure since this is an indemnity (flat lump-sum) product, not a medical plan. Do not invent deductible/OOP fields.\n- Pages 7-11: Lengthy state-by-state exclusions and limitations language (bullet exclusions with italicized state variations) - not needed for extraction, just boilerplate legal/regulatory text.\n- Pages 12-14: General disclaimers, policy form numbers, underwriting company info, producer compensation notice, non-US coverage notice - boilerplate, not extraction-relevant.\nTotal plan count in this document: 1 (single Guaranteed Issue hospital indemnity plan with composite 4-tier rates). Only one carrier product per proposal is typical for this MetLife Hospital Indemnity format - confirm if future docs show multiple plan options/riders, as this template assumes only one benefit schedule column (\"Plan\") in the Covered Benefits table. If multiple plan options appear (e.g. \"Low Plan\"/\"High Plan\" columns), extract each as separate plan entries with same benefit categories.",
+  "product_type": "simple_tiered",
+  "created_at": "2026-07-29T21:08:16.633704+00:00",
+  "updated_at": "2026-07-29T21:08:16.633720+00:00",
+  "times_used": 1
+}

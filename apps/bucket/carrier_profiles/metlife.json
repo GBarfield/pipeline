@@ -1,0 +1,19 @@
+{
+  "carrier_name": "MetLife",
+  "fingerprint": {
+    "must_contain": [
+      "MetLife",
+      "Metropolitan Life Insurance Company"
+    ],
+    "any_of": [
+      "Group Accident Insurance",
+      "GPNP12-AX",
+      "Continued Insurance with Premium Payment",
+      "L0922025816"
+    ]
+  },
+  "extraction_notes": "This MetLife document is a Group Accident Insurance proposal (voluntary/employee-paid product), which is structurally very different from typical medical benefits proposals. Key layout notes:\n\n1. Document has only ONE plan/rate design in this example (Bartel Communications, Employee Paid Offer). Rate table is on page 5 titled 'Proposed Rates Plan' with a simple 2-column table: Type (Employee Only, Employee + Spouse, Employee + Children, Employee + Spouse/Children) and Monthly premium. There is no 'employee + family' label - 'Employee + Spouse/Children' is the family-tier equivalent. Map these to standard tiers: employee_only, employee_spouse, employee_children, family.\n\n2. Unlike medical plans, there is NO deductible, OOP max, or coinsurance structure - this is a fixed indemnity/schedule-of-benefits product. Each covered event pays a FLAT DOLLAR AMOUNT (or % of a related benefit for things like 'chip fracture' or 'partial dislocation' which pay 25% of the full fracture/dislocation amount). Record these flat amounts as the 'benefits' entries; leave deductible/OOP fields blank/omitted since not applicable.\n\n3. The 'Covered Benefits' table spans pages 6-9 and is organized by Category > Subcategory > specific injury/service > dollar Plan amount. Categories seen: Accidental Injury Benefits (Fracture Closed, Fracture Open, Dislocation Closed, Dislocation Open, Burn, Concussion, Coma, Laceration), Accident-Medical Treatment and Services Benefits (Ambulance, Emergency Care, Non-Emergency Initial Care, Medical Testing, Physician Follow-Up, Therapy Services, Prosthetic Device, Medical Appliance, Blood/Plasma/Platelets, Surgery Benefit, Exploratory Surgery, Other Outpatient Surgery), Accident-Hospital Benefits (Admission, Confinement, Rehab), and Other Benefits Category (Health Screening Benefit). This proposal only shows ONE column of dollar amounts (single plan design labeled generically 'Plan'), so there is only one plan to record even though the benefit table is very granular/long (~100+ line items). Every one of these granular line items should be captured as a benefit key-value pair.\n\n4. If a future document from this carrier shows MULTIPLE plan designs/tiers (e.g. 'Low Plan', 'High Plan', or 'Option 1/2/3'), the Covered Benefits table would likely show multiple $ columns side by side (one per plan) instead of the single 'Plan' column seen here - extract each column as its own separate plan object, each with the FULL set of ~100 line items, don't shortcut later plans.\n\n5. Pages 11-16 contain a huge state-variation exclusions/limitations appendix - this is boilerplate legal text, not benefit data, and should be ignored for extraction purposes (not part of the benefits schema).\n\n6. Proposal header/cover page (page 1) gives Group Name, 'Employee Paid Offer' vs employer-paid, proposal date, and effective date. Page 2 'Proposal Assumptions' table gives situs state, SIC code, employee eligibility rules - useful for context but not part of the benefits/rates schema. Page 4-5 gives Plan Design (coverage type, guaranteed issue, pre-ex limitation, portability) and Rate Information (composite rates, rate guarantee period) - also contextual, not per-plan benefit data.\n\n7. Quote/form ID found in footer: 'L0922025816[exp0924][All States][DC,GU,MP,PR,VI]' - useful as quote_id.\n\n8. No actuarial value, network tiers, or out-of-network cost-sharing applicable to this product type - omit those fields.",
+  "created_at": "2026-07-28T19:49:11.055912+00:00",
+  "updated_at": "2026-07-28T19:49:11.055927+00:00",
+  "times_used": 1
+}
