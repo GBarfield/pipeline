@@ -6,6 +6,7 @@
   "scripts": {
     "load:elections": "node src/etl/loadElections.ts",
     "import:en-contacts": "node src/etl/importEnCarrierContacts.ts",
+    "mail:test": "node src/scripts/testSmtp2go.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node --watch src/index.ts"
   },

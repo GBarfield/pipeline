@@ -1,15 +1,16 @@
 // Destination: apps/api/src/lib/mailer.ts
+//
+// Outbound email for RFQs and Group Proposals. Two transports, same
+// SMTP2GO account:
+//   - "api"  (preferred): SMTP2GO HTTP API, see smtp2go.ts. Returns the
+//            SMTP2GO email_id for tracking.
+//   - "smtp": the original nodemailer SMTP relay (SMTP2GO_HOST/PORT/USER/
+//            PASS, port 2525). Kept as a fallback.
+// Which one is used: MAIL_TRANSPORT=api|smtp if set; otherwise "api"
+// whenever SMTP2GO_API_KEY is present, else "smtp". The env is read once
+// at startup, so restart BenAdminAPI after changing it.
 import nodemailer from 'nodemailer';
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP2GO_HOST,
-  port: Number(process.env.SMTP2GO_PORT ?? 2525),
-  secure: false, // STARTTLS on 2525, not implicit TLS
-  auth: {
-    user: process.env.SMTP2GO_USER,
-    pass: process.env.SMTP2GO_PASS,
-  },
-});
+import { sendEmail, isSmtp2goApiConfigured } from './smtp2go.ts';
 
 interface EmailAddress {
   name: string;
@@ -21,14 +22,51 @@ interface RfqEmailAttachment {
   path: string;
 }
 
+export type MailTransport = 'api' | 'smtp';
+
+export function mailTransport(): MailTransport {
+  const forced = process.env.MAIL_TRANSPORT?.trim().toLowerCase();
+  if (forced === 'api' || forced === 'smtp') return forced;
+  return isSmtp2goApiConfigured() ? 'api' : 'smtp';
+}
+
+let smtpTransporter: nodemailer.Transporter | null = null;
+function smtp() {
+  smtpTransporter ??= nodemailer.createTransport({
+    host: process.env.SMTP2GO_HOST,
+    port: Number(process.env.SMTP2GO_PORT ?? 2525),
+    secure: false, // STARTTLS on 2525, not implicit TLS
+    auth: {
+      user: process.env.SMTP2GO_USER,
+      pass: process.env.SMTP2GO_PASS,
+    },
+  });
+  return smtpTransporter;
+}
+
+console.log(`[mailer] outbound email transport: ${mailTransport()}`);
+
+// Returns the SMTP2GO email_id when sent via the API (null via SMTP).
+// Callers that ignore the return value keep working unchanged.
 export async function sendRfqEmail(opts: {
   to: EmailAddress;
   replyTo: EmailAddress;
   subject: string;
   body: string;
   attachments: RfqEmailAttachment[];
-}) {
-  await transporter.sendMail({
+}): Promise<{ transport: MailTransport; emailId: string | null }> {
+  if (mailTransport() === 'api') {
+    const r = await sendEmail({
+      to: opts.to,
+      replyTo: opts.replyTo,
+      subject: opts.subject,
+      text: opts.body,
+      attachments: opts.attachments.map((a) => ({ filename: a.filename, path: a.path })),
+    });
+    return { transport: 'api', emailId: r.emailId };
+  }
+
+  await smtp().sendMail({
     from: `"${process.env.RFQ_FROM_NAME}" <${process.env.RFQ_FROM_EMAIL}>`,
     replyTo: `"${opts.replyTo.name}" <${opts.replyTo.email}>`,
     to: `"${opts.to.name}" <${opts.to.email}>`,
@@ -36,6 +74,7 @@ export async function sendRfqEmail(opts: {
     text: opts.body,
     attachments: opts.attachments,
   });
+  return { transport: 'smtp', emailId: null };
 }
 
 // sendRfqEmail's body was already fully generic (to/replyTo/subject/body/
