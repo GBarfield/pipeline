@@ -20,10 +20,15 @@ export async function verifyPassword(plain: string, hash: string): Promise<boole
 
 export interface SessionPayload {
   sub: number; // User.id
+  // User.sessionVersion when the session was made. requireAuth refuses a
+  // token whose sv doesn't match (or is missing), so bumping the user's
+  // sessionVersion signs them out everywhere. Tokens issued before two-step
+  // sign-in existed have no sv, so everyone signs in again (with a code) once.
+  sv: number;
 }
 
-export function signSessionToken(userId: number): string {
-  return jwt.sign({ sub: userId } satisfies SessionPayload, JWT_SECRET, { expiresIn: TOKEN_TTL });
+export function signSessionToken(userId: number, sessionVersion: number): string {
+  return jwt.sign({ sub: userId, sv: sessionVersion } satisfies SessionPayload, JWT_SECRET, { expiresIn: TOKEN_TTL });
 }
 
 export function verifySessionToken(token: string): SessionPayload {

@@ -49,6 +49,23 @@ model User {
   restrictedDivisionId Int?
   restrictedDivision   Division? @relation(fields: [restrictedDivisionId], references: [id])
 
+  // Two-step sign-in (authenticator app, TOTP), added 2026-11-14. Same
+  // design as Translatus: see src/lib/twoStep.ts.
+  totpSecretEnc   Bytes?    // the authenticator key, encrypted; null until set up
+  totpOnAt        DateTime? // when they finished setting it up
+  totpNewEnc      Bytes?    // key being set up (shown as the QR code), not yet confirmed
+  totpLastStep    BigInt?   // last 30-second step a code was accepted for: a code works once
+  totpFailures    Int       @default(0)
+  totpLockedUntil DateTime?
+  // After a reset, a new authenticator can only be set up from the emailed link.
+  totpNeedsLink   Boolean   @default(false)
+  // Bumped on reset / password change / deactivation: older session cookies stop working.
+  sessionVersion  Int       @default(0)
+
+  pendingSignIns PendingSignIn[]
+  accountLinks   AccountLink[] @relation("AccountLinkUser")
+  createdLinks   AccountLink[] @relation("AccountLinkCreatedBy")
+
   sentRfqs Rfq[]
   rfqNotes RfqNote[]
 
@@ -705,4 +722,36 @@ model CarrierMessageRecipient {
 
   @@index([messageId])
   @@index([providerId])
+}
+
+// --- Two-step sign-in (2026-11-14) -------------------------------------------
+
+// Between the password and the 6-digit code. Not a session: it opens nothing
+// but the code / setup step. Token itself lives only in the pipeline_pending
+// cookie; only its SHA-256 is stored.
+model PendingSignIn {
+  tokenHash String   @id
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose   String   // verify | enroll
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([userId])
+}
+
+// Emailed one-time links. kind "authenticator": set up a new phone after an
+// admin reset (password first, then the QR code).
+model AccountLink {
+  tokenHash   String    @id
+  userId      Int
+  user        User      @relation("AccountLinkUser", fields: [userId], references: [id], onDelete: Cascade)
+  kind        String
+  createdById Int?
+  createdBy   User?     @relation("AccountLinkCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  usedAt      DateTime?
+
+  @@index([userId])
 }

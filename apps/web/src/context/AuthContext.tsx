@@ -8,10 +8,24 @@ export interface AuthUser {
   brokerId: number | null;
 }
 
+// Sign-in is two steps (see apps/api/src/lib/twoStep.ts): login() checks the
+// password and says which second step comes next; submitCode() finishes it
+// and signs in.
+export type NextStep = 'code' | 'setup';
+
+export class SignInError extends Error {
+  restart: boolean;
+  constructor(message: string, restart = false) {
+    super(message);
+    this.restart = restart;
+  }
+}
+
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<NextStep>;
+  submitCode: (code: string) => Promise<{ enrolled: boolean }>;
   logout: () => Promise<void>;
 }
 
@@ -36,18 +50,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refresh();
   }, []);
 
-  async function login(email: string, password: string) {
+  async function login(email: string, password: string): Promise<NextStep> {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      throw new Error(body.error || 'Login failed');
-    }
-    setUser(await res.json());
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new SignInError(body.error || 'Login failed');
+    return body.next as NextStep;
+  }
+
+  async function submitCode(code: string): Promise<{ enrolled: boolean }> {
+    const res = await fetch('/api/auth/two-step', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new SignInError(body.error || 'Sign-in failed', !!body.restart);
+    const { enrolled, ...u } = body;
+    setUser(u as AuthUser);
+    return { enrolled: !!enrolled };
   }
 
   async function logout() {
@@ -55,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }
 
-  return <AuthContext.Provider value={{ user, loading, login, logout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, loading, login, submitCode, logout }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

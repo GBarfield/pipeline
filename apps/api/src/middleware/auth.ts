@@ -39,6 +39,11 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     if (!user || !user.active) {
       return res.status(401).json({ error: 'Not authenticated' });
     }
+    // Signed out everywhere (authenticator reset, password change,
+    // deactivation), or a token from before two-step sign-in existed.
+    if (typeof payload.sv !== 'number' || payload.sv !== user.sessionVersion) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
         req.user = {
       id: user.id,
       email: user.email,

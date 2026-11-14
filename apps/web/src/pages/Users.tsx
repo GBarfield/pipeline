@@ -8,9 +8,12 @@ import {
   Select,
   Switch,
   Tag,
+  Popconfirm,
+  Typography,
   message,
   type TableProps,
 } from 'antd';
+import { useAuth } from '../context/AuthContext';
 
 // ---------------------------------------------------------------------------
 // NOTE: reconstructed against the documented conventions for this page
@@ -31,6 +34,10 @@ interface UserRow {
   brokerId: number | null;
   restrictedDivisionId: number | null;
   active: boolean;
+  // Two-step sign-in (see apps/api/src/lib/twoStep.ts)
+  totpOnAt: string | null;
+  totpNeedsLink: boolean;
+  totpLockedUntil: string | null;
 }
 
 interface DivisionRow {
@@ -47,6 +54,7 @@ interface BrokerRow {
 }
 
 export default function Users() {
+  const { user: me } = useAuth();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [divisions, setDivisions] = useState<DivisionRow[]>([]);
   const [brokers, setBrokers] = useState<BrokerRow[]>([]);
@@ -211,6 +219,34 @@ export default function Users() {
     }
   }
 
+  // Lost or new phone: clears their authenticator, signs them out, emails a
+  // one-time link. The link is shown here too in case the email doesn't arrive.
+  async function resetAuthenticator(user: UserRow) {
+    const res = await fetch(`/api/users/${user.id}/reset-authenticator`, { method: 'POST' });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      message.error(body.error || 'Failed to reset authenticator');
+      return;
+    }
+    loadAll();
+    Modal.info({
+      title: `Authenticator reset for ${body.email}`,
+      width: 560,
+      content: (
+        <div>
+          <p>They have been signed out. {body.emailed ? 'We emailed them a link to connect their new phone.' : <strong>The email did not go out.</strong>}</p>
+          <p>{body.emailed ? 'If it doesn’t arrive, send them this link another way.' : 'Send them this link another way (it works once):'}</p>
+          <Typography.Paragraph copyable style={{ wordBreak: 'break-all', background: '#fafafa', padding: 8, borderRadius: 4 }}>
+            {body.url}
+          </Typography.Paragraph>
+          <p style={{ color: 'rgba(0,0,0,0.45)', marginBottom: 0 }}>
+            Works once, until {new Date(body.expiresAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}. They’ll type their password, then scan a new QR code.
+          </p>
+        </div>
+      ),
+    });
+  }
+
   const columns: TableProps<UserRow>['columns'] = [
     { title: 'Name', dataIndex: 'name', key: 'name' },
     { title: 'Email', dataIndex: 'email', key: 'email' },
@@ -253,12 +289,37 @@ export default function Users() {
       ),
     },
     {
+      title: 'Two-step',
+      key: 'twoStep',
+      render: (_: unknown, user: UserRow) => {
+        const locked = user.totpLockedUntil && new Date(user.totpLockedUntil) > new Date();
+        const tag = user.totpOnAt
+          ? <Tag color="green">On since {new Date(user.totpOnAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</Tag>
+          : user.totpNeedsLink
+            ? <Tag color="orange">Reset, waiting for link</Tag>
+            : <Tag>Not set up yet</Tag>;
+        return <>{tag}{locked && <Tag color="red">Locked (wrong codes)</Tag>}</>;
+      },
+    },
+    {
       title: 'Actions',
       key: 'actions',
       render: (_: unknown, user: UserRow) => (
-        <Button size="small" onClick={() => handleOpenEdit(user)}>
-          Edit
-        </Button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Button size="small" onClick={() => handleOpenEdit(user)}>
+            Edit
+          </Button>
+          {user.id !== me?.id && user.active && (user.totpOnAt || user.totpNeedsLink) && (
+            <Popconfirm
+              title="Reset this person's authenticator?"
+              description="For a lost or new phone. They're signed out and emailed a link to connect a new phone."
+              okText="Reset"
+              onConfirm={() => resetAuthenticator(user)}
+            >
+              <Button size="small">Reset authenticator</Button>
+            </Popconfirm>
+          )}
+        </div>
       ),
     },
   ];
