@@ -53,6 +53,14 @@ const PLACEHOLDERS: { key: string; label: string }[] = [
   { key: 'today', label: "Today's date" },
 ];
 
+// Same rule as apps/api/src/etl/groupMatch.ts normalizeGroupName (used by the
+// API and the nightly EN loader): ignore case, punctuation and extra spaces.
+function normalizeGroupName(name: string): string {
+  return name.toLowerCase().replace(/\bdba\b/g, 'dba').replace(/[.,'"()&_]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+const NEW_GROUP = -1;
+
 function renderPlaceholders(text: string, vars: Record<string, string>): string {
   return text.replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (whole, key: string) => {
     const k = key.toLowerCase();
@@ -176,6 +184,8 @@ function SendTab({
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ sent: number; failed: number; failures: { email: string; error: string }[] } | null>(null);
   const [saveOpen, setSaveOpen] = useState(false);
+  const [groupSearch, setGroupSearch] = useState('');
+  const [addingGroup, setAddingGroup] = useState(false);
 
   useEffect(() => {
     api<Carrier[]>(`${API_ROOT}/api/carriers?type=CARRIER,TPA`).then(setCarriers).catch(() => message.error('Could not load carriers'));
@@ -252,6 +262,37 @@ function SendTab({
     return [...new Set(found.filter((k) => !known.has(k)))];
   }, [subject, body]);
   const usesGroupName = /\{\{\s*group_name\s*\}\}/i.test(`${subject}\n${body}`);
+
+  // Group picker options, plus '+ Add "<typed name>" as a new group' when
+  // what's typed doesn't match an existing group.
+  const typedGroup = groupSearch.replace(/\s+/g, ' ').trim();
+  const groupOptions = useMemo(() => {
+    const opts: { value: number; label: string }[] = [...groups]
+      .sort((a, b) => a.company.localeCompare(b.company))
+      .map((g) => ({ value: g.id, label: g.company }));
+    if (typedGroup && !groups.some((g) => normalizeGroupName(g.company) === normalizeGroupName(typedGroup))) {
+      opts.unshift({ value: NEW_GROUP, label: `+ Add "${typedGroup}" as a new group` });
+    }
+    return opts;
+  }, [groups, typedGroup]);
+
+  const pickGroup = async (v: number | undefined) => {
+    if (v !== NEW_GROUP) { setGroupId(v ?? null); return; }
+    const name = typedGroup;
+    setAddingGroup(true);
+    try {
+      const g = await api<Group & { existed: boolean }>(`${BASE}/groups`, jsonInit('POST', { company: name }));
+      setGroups((list) => (list.some((x) => x.id === g.id) ? list : [...list, { id: g.id, company: g.company }]));
+      setGroupId(g.id);
+      setGroupSearch('');
+      if (g.existed) message.info(`"${g.company}" is already in PipeLine, so that group was picked.`);
+      else message.success(`Group "${g.company}" added to PipeLine`);
+    } catch (e) {
+      message.error((e as Error).message);
+    } finally {
+      setAddingGroup(false);
+    }
+  };
 
   const canSend = !!carrierId && recipients.length > 0 && subject.trim() !== '' && body.trim() !== '';
 
@@ -333,15 +374,25 @@ function SendTab({
             </Form.Item>
           )}
 
-          <Form.Item label="About group (optional)" extra="Fills in {{group_name}} and is saved with the message.">
+          <Form.Item
+            label="About group (optional)"
+            extra="Fills in {{group_name}} and is saved with the message. Not listed? Type the name and pick '+ Add' to add it to PipeLine. Use the name as Employee Navigator spells it, so EN's data links to it later."
+          >
             <Select
               showSearch
               allowClear
-              placeholder="Pick a group..."
+              placeholder="Pick or type a group..."
+              loading={addingGroup}
+              disabled={addingGroup}
               value={groupId ?? undefined}
-              onChange={(v) => setGroupId(v ?? null)}
-              options={[...groups].sort((a, b) => a.company.localeCompare(b.company)).map((g) => ({ value: g.id, label: g.company }))}
-              filterOption={(input, option) => (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())}
+              searchValue={groupSearch}
+              onSearch={setGroupSearch}
+              onChange={(v) => pickGroup(v as number | undefined)}
+              onBlur={() => setGroupSearch('')}
+              options={groupOptions}
+              filterOption={(input, option) =>
+                option?.value === NEW_GROUP || (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+              }
             />
           </Form.Item>
 

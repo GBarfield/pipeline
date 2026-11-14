@@ -10,6 +10,9 @@
 // PUT    /templates/:id              creator or Super User
 // DELETE /templates/:id              soft delete (active=false), creator or Super User
 // GET    /messages?carrierId=&limit= sent history, newest first
+// POST   /groups                     add a group on the fly: { company }. Returns the
+//                                     existing group instead when the name already
+//                                     exists (same matching as the nightly EN loader).
 // POST   /messages                   send. Body: { carrierId, contactIds?: number[],
 //                                     allContacts?: boolean, groupId?, templateId?,
 //                                     subject, body }
@@ -28,6 +31,7 @@ import { requireAuth } from '../middleware/auth.ts';
 import { canAccessGroup } from '../lib/scope.ts';
 import { sendMail } from '../lib/mailer.ts';
 import { renderPlaceholders } from '../lib/placeholders.ts';
+import { normalizeGroupName } from '../etl/groupMatch.ts';
 
 const router = Router();
 router.use(requireAuth);
@@ -131,6 +135,45 @@ router.delete('/templates/:id', async (req, res) => {
   } catch (err) {
     console.error('[carrier-communication] delete template:', err);
     res.status(500).json({ error: 'Failed to delete canned message' });
+  }
+});
+
+// --- add a group on the fly -----------------------------------------------------
+//
+// For a message about a group that isn't in PipeLine yet. Only the name is
+// set. Matching uses normalizeGroupName, the same rule the nightly Employee
+// Navigator loader (loadElections.ts / groupMatch.ts) uses, so:
+//   - "Acme Co." typed here finds an existing "ACME CO" instead of making a
+//     duplicate, and
+//   - a group added here with the name EN uses is picked up by EN's nightly
+//     load later instead of EN creating a second one.
+// A Broker User's new group gets their broker (same as POST /api/groups); a
+// Super User's has no broker yet, like groups the EN loader auto-creates.
+router.post('/groups', async (req, res) => {
+  const company = str(req.body?.company).replace(/\s+/g, ' ').trim();
+  if (!company) return res.status(400).json({ error: 'Group name is required' });
+  if (company.length > 200) return res.status(400).json({ error: 'Group name is too long' });
+  try {
+    const norm = normalizeGroupName(company);
+    const all = await prisma.group.findMany({ select: { id: true, company: true, brokerId: true, archived: true } });
+    const matches = all.filter((g) => normalizeGroupName(g.company) === norm);
+    const visible = isSuper(req) ? matches : matches.filter((g) => g.brokerId === req.user!.brokerId);
+    if (visible.length > 0) {
+      const g = visible.sort((a, b) => Number(a.archived) - Number(b.archived) || a.id - b.id)[0];
+      return res.json({ id: g.id, company: g.company, existed: true });
+    }
+    if (matches.length > 0) {
+      return res.status(409).json({ error: 'A group with this name already exists under another broker. Ask a Super User to assign it.' });
+    }
+    const created = await prisma.group.create({
+      data: { company, brokerId: isSuper(req) ? null : req.user!.brokerId },
+      select: { id: true, company: true },
+    });
+    console.log(`[carrier-communication] user ${req.user!.id} added group #${created.id} "${created.company}"`);
+    res.status(201).json({ ...created, existed: false });
+  } catch (err) {
+    console.error('[carrier-communication] add group:', err);
+    res.status(500).json({ error: 'Failed to add group' });
   }
 });
 
