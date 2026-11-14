@@ -16,6 +16,7 @@ import AccountingDashboard from './pages/accounting/Dashboard';
 import BenefitsAdministrationDashboard from './pages/benefits-administration/Dashboard';
 import Settings from './pages/Settings';
 import Carriers from './pages/databases/Carriers';
+import Partners from './pages/databases/Partners';
 import Brokers from './pages/databases/Brokers';
 import Products from './pages/databases/Products';
 import Groups from './pages/databases/Groups';
@@ -51,6 +52,7 @@ function buildMenuItems(divisionKey: string | null): MenuEntry[] {
       label: 'Databases',
       children: [
         { key: '/databases/carriers', label: <Link to="/databases/carriers">Carriers</Link> },
+        { key: '/databases/partners', label: <Link to="/databases/partners">TPAs & Vendors</Link> },
         { key: '/databases/brokers', label: <Link to="/databases/brokers">Brokers</Link> },
         { key: '/databases/products', label: <Link to="/databases/products">Products</Link> },
         { key: '/databases/groups', label: <Link to="/databases/groups">Groups</Link> },
@@ -148,6 +150,7 @@ function Shell({ user }: { user: AuthUser }) {
             <Route path="/accounting/dashboard" element={<AccountingDashboard />} />
             <Route path="/benefits-administration/dashboard" element={<BenefitsAdministrationDashboard />} />
             <Route path="/databases/carriers" element={<Carriers />} />
+            <Route path="/databases/partners" element={<Partners />} />
             <Route path="/databases/brokers" element={<Brokers />} />
             <Route path="/databases/products" element={<Products />} />
             <Route path="/databases/groups" element={<Groups />} />

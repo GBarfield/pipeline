@@ -37,6 +37,12 @@
 // alphabetically). Opt-in and defaults to the original `{ id: 'asc' }`
 // behavior for every route that doesn't pass it, so this changes nothing
 // for carriers/brokers/products.
+//
+// 2026-11-14 addition: optional `listWhere`. Extra where-filter for GET /
+// only, built from the request (query string). Used by carriers.ts so the
+// list returns only real carriers by default and ?type=TPA,VENDOR returns
+// the partner rows. GET /:id, PUT and DELETE are deliberately not
+// filtered, so a record is still reachable by id whatever its type.
 
 import { Router } from 'express';
 import { requireAuth, type AuthUser } from '../middleware/auth.ts';
@@ -55,10 +61,12 @@ export function createCrudRouter(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     augment?: (records: any[]) => Promise<any[]>;
     orderBy?: Record<string, 'asc' | 'desc'>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    listWhere?: (req: any) => Record<string, unknown> | undefined;
   } = {}
 ) {
   const router = Router();
-  const { include, writeRoles, scope, injectOnCreate, augment, orderBy } = options;
+  const { include, writeRoles, scope, injectOnCreate, augment, orderBy, listWhere } = options;
 
   router.use(requireAuth);
 
@@ -77,7 +85,7 @@ export function createCrudRouter(
   router.get('/', async (req, res) => {
     try {
       let records = await delegate.findMany({
-        where: scopedWhere(req.user!),
+        where: scopedWhere(req.user!, listWhere ? listWhere(req) ?? {} : {}),
         include,
         orderBy: orderBy ?? { id: 'asc' },
       });

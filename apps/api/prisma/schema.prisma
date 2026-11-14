@@ -17,6 +17,16 @@ model HealthCheck {
   createdAt DateTime @default(now())
 }
 
+// What kind of company a Carrier row is. Added 2026-11-14 so TPAs and
+// software vendors can share the Carrier table (and its CarrierContact
+// sub-table) without showing up in carrier pickers: GET /api/carriers
+// returns CARRIER rows only unless ?type= is given.
+enum PartnerType {
+  CARRIER
+  TPA
+  VENDOR
+}
+
 enum Role {
   SUPER_USER
   BROKER_USER
@@ -59,6 +69,7 @@ model Carrier {
   email            String?
   specialty        String?
   logoImage        String?
+  partnerType      PartnerType @default(CARRIER)
   active           Boolean  @default(true)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -68,6 +79,8 @@ model Carrier {
   groups   Group[]
   contacts CarrierContact[]
   rfqs     Rfq[]
+
+  @@index([partnerType])
 }
 
 model Broker {

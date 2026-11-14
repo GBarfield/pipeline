@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "load:elections": "node src/etl/loadElections.ts",
+    "import:en-contacts": "node src/etl/importEnCarrierContacts.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node --watch src/index.ts"
   },

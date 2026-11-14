@@ -23,3 +23,6 @@ cookies.txt
 !/apps/*/.oxlintrc.json
 /apps/api/package-lock.json
 *.xlsx
+
+# Prisma generated client (rebuilt on the server by `prisma generate`)
+apps/api/generated/

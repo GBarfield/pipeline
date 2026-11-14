@@ -2,6 +2,7 @@
 import MaintenancePage from '../../components/MaintenancePage';
 import type { FieldConfig } from '../../components/MaintenancePage';
 import CarrierContactsPanel from '../../components/CarrierContactsPanel';
+import { PARTNER_TYPE_OPTIONS } from './partnerTypes';
 
 const fields: FieldConfig[] = [
   { name: 'name', label: 'Carrier Name', type: 'text', required: true },
@@ -14,6 +15,8 @@ const fields: FieldConfig[] = [
   { name: 'phone', label: 'Phone', type: 'text' },
   { name: 'email', label: 'Email', type: 'text' },
   { name: 'specialty', label: 'Specialty', type: 'text' },
+  // Switch a row to TPA / Vendor here to move it onto the TPAs & Vendors page.
+  { name: 'partnerType', label: 'Type', type: 'select', required: true, options: PARTNER_TYPE_OPTIONS },
   { name: 'logoImage', label: 'Logo Image URL', type: 'text', span: 24 },
   { name: 'active', label: 'Active', type: 'switch' },
 ];
@@ -26,6 +29,7 @@ export default function Carriers() {
       fields={fields}
       labelFor={(r) => r.name}
       writeRoles={['SUPER_USER']}
+      defaults={{ partnerType: 'CARRIER' }}
       accordion={{ selectLabel: 'Select Carrier', formLabel: 'Carrier Details' }}
       extraPanels={(record) => [
         {

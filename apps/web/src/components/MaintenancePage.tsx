@@ -18,7 +18,7 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 
-export type FieldType = 'text' | 'textarea' | 'number' | 'date' | 'switch' | 'relation';
+export type FieldType = 'text' | 'textarea' | 'number' | 'date' | 'switch' | 'relation' | 'select';
 
 export interface FieldConfig {
   name: string;
@@ -30,6 +30,8 @@ export interface FieldConfig {
   relationLabelKey?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   relationLabel?: (record: any) => string;
+  // Fixed choices for type: 'select' (e.g. Carrier.partnerType).
+  options?: { value: string; label: string }[];
 }
 
 interface RecordOption {
@@ -63,6 +65,12 @@ export interface MaintenancePageProps {
   // (e.g. Groups) -- default is "no restriction," so existing callers of
   // this component are unaffected.
   writeRoles?: Array<'SUPER_USER' | 'BROKER_USER'>;
+  // Appended to apiBase for the list request only (GET apiBase + listQuery),
+  // e.g. "?type=TPA,VENDOR". Get-one/create/update still use plain apiBase.
+  // Changing it reloads the dropdown.
+  listQuery?: string;
+  // Values pre-filled into the form for a new entry (and on Clear / New).
+  defaults?: Record<string, unknown>;
 }
 
 const API_ROOT = import.meta.env.VITE_API_URL ?? '';
@@ -75,6 +83,8 @@ export default function MaintenancePage({
   accordion,
   extraPanels,
   writeRoles,
+  listQuery,
+  defaults,
 }: MaintenancePageProps) {
   const { user } = useAuth();
   const canWrite = !writeRoles || (!!user && writeRoles.includes(user.role));
@@ -93,7 +103,7 @@ export default function MaintenancePage({
   const loadOptions = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(url);
+      const res = await fetch(`${url}${listQuery ?? ''}`);
       const data = await res.json();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setOptions(data.map((r: any) => ({ id: r.id, label: labelFor(r) })));
@@ -102,11 +112,17 @@ export default function MaintenancePage({
     } finally {
       setLoading(false);
     }
-  }, [url, title, labelFor]);
+  }, [url, listQuery, title, labelFor]);
 
+  // Its own effect so a listQuery change (e.g. a type filter) reloads the
+  // dropdown. Keyed on url/listQuery rather than loadOptions itself, because
+  // callers pass labelFor inline and that would refetch on every render.
   useEffect(() => {
     loadOptions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url, listQuery]);
 
+  useEffect(() => {
     fields
       .filter((f) => f.type === 'relation' && f.relationApi)
       .forEach(async (f) => {
@@ -154,6 +170,7 @@ export default function MaintenancePage({
     setSelectedId(null);
     setSelectedRecord(null);
     form.resetFields();
+    if (defaults) form.setFieldsValue(defaults);
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -204,7 +221,7 @@ export default function MaintenancePage({
   );
 
   const formContent = (
-    <Form form={form} layout="vertical" onFinish={handleSubmit} disabled={!canWrite}>
+    <Form form={form} layout="vertical" onFinish={handleSubmit} disabled={!canWrite} initialValues={defaults}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0 24px' }}>
         {fields.map((f) => (
           <Form.Item
@@ -264,6 +281,8 @@ function renderField(f: FieldConfig, relationOpts?: RecordOption[]) {
       return <DatePicker style={{ width: '100%' }} />;
     case 'switch':
       return <Switch />;
+    case 'select':
+      return <Select placeholder={`Select ${f.label}`} options={f.options || []} />;
     case 'relation':
       return (
         <Select
