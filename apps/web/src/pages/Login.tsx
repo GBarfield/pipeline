@@ -5,8 +5,11 @@
 //   2. the 6-digit code from the authenticator app, or, the first time (or
 //      after a reset), connecting the app: QR code, tap-to-add link for
 //      phones, or a key to type, then one code.
-// Also handles /link?token=... (the emailed "set up your authenticator again"
-// link): password first, then the same setup step.
+// Also handles the emailed links, /link?token=... (same as Translatus):
+//   welcome        choose a password (twice), then connect the phone
+//   password       choose a new password, then the usual code
+//   authenticator  type the current password, then connect the new phone
+// and "Forgot your password?" (emails a password link, 1 hour).
 // The QR code only ever comes from the server after a right password.
 import { useEffect, useState } from 'react';
 import { Form, Input, Button, Card, Alert, Typography, Collapse, Spin, message } from 'antd';
@@ -15,10 +18,10 @@ import { useAuth, SignInError } from '../context/AuthContext';
 
 const { Text, Paragraph, Title } = Typography;
 
-type Step = 'password' | 'code' | 'setup' | 'link';
+type Step = 'password' | 'code' | 'setup' | 'link' | 'forgot';
 
 interface SetupInfo { email: string; qrSvg: string; uri: string; key: string }
-interface LinkInfo { kind: string; email: string; name: string; expiresAt: string }
+interface LinkInfo { kind: 'welcome' | 'password' | 'authenticator'; email: string; name: string; expiresAt: string }
 
 function Shell({ title, subtitle, children, width = 400 }: { title: string; subtitle?: string; children: React.ReactNode; width?: number }) {
   return (
@@ -141,7 +144,7 @@ export default function Login() {
     }
   }
 
-  async function onLinkPassword(values: { password: string }) {
+  async function onLinkPassword(values: { password: string; confirm?: string }) {
     setSubmitting(true);
     setError(null);
     try {
@@ -149,13 +152,32 @@ export default function Login() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: linkToken, password: values.password }),
+        body: JSON.stringify({ token: linkToken, password: values.password, confirm: values.confirm }),
       });
       const b = await r.json().catch(() => ({}));
       if (!r.ok) { setError(b.error || 'Could not use the link'); return; }
       navigate('/', { replace: true }); // the link is used up; a reload shouldn't show it again
-      if (b.next === 'code') setStep('code');
-      else await goToSetup();
+      if (b.next === 'code') {
+        setNotice(b.passwordSet ? 'Your new password is saved. Now type the code from your authenticator app.' : null);
+        setStep('code');
+      } else await goToSetup();
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function onForgot(values: { email: string }) {
+    setSubmitting(true);
+    setError(null);
+    try {
+      await fetch('/api/auth/forgot', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: values.email }),
+      });
+      setNotice('If that email has a PipeLine account, we just sent it a link to choose a new password. Check your inbox, and your spam or junk folder. The link works for 1 hour.');
+      setStep('password');
     } finally {
       setSubmitting(false);
     }
@@ -175,12 +197,55 @@ export default function Login() {
       return (
         <Shell title="This link doesn't work anymore" subtitle="It may have expired, or it was already used. Each link works only once.">
           <Paragraph>If you already finished setting up, just <a href="/">sign in</a>.</Paragraph>
-          <Paragraph>If you still need to connect a phone, ask a Super User to reset your authenticator again. You'll get a new email.</Paragraph>
+          <Paragraph>
+            If you need a new password, use <a onClick={() => { navigate('/', { replace: true }); setLinkError(null); setStep('forgot'); }}>Forgot your password?</a>{' '}
+            If you need a new setup link, ask the person who set up your account to send another one.
+          </Paragraph>
         </Shell>
       );
     }
     if (!link) return <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center' }}><Spin size="large" /></div>;
     const first = link.name.split(' ')[0];
+    if (link.kind !== 'authenticator') {
+      const welcome = link.kind === 'welcome';
+      return (
+        <Shell
+          title={welcome ? 'Set up your account' : 'Choose a new password'}
+          subtitle={welcome
+            ? `Step 1 of 2. ${first ? `Hi ${first}. ` : ''}Choose a password. Next, you'll connect an app on your phone.`
+            : 'Type a new password twice. Then you\'ll type the code from your authenticator app.'}
+        >
+          {error && <Alert type="error" message={error} style={{ marginBottom: 16 }} />}
+          <Form layout="vertical" onFinish={onLinkPassword}>
+            <Paragraph type="secondary">Your account: <strong>{link.email}</strong></Paragraph>
+            {/* Lets password managers save the new password under the right email. */}
+            <input type="email" name="username" value={link.email} autoComplete="username" readOnly hidden />
+            <Form.Item
+              name="password"
+              label="New password"
+              extra="At least 12 characters. A short sentence you'll remember works well: four or five words with spaces."
+              rules={[{ required: true, message: 'Choose a password' }, { min: 12, message: 'At least 12 characters' }, { max: 200 }]}
+            >
+              <Input.Password autoFocus autoComplete="new-password" />
+            </Form.Item>
+            <Form.Item
+              name="confirm"
+              label="Type the same password again"
+              dependencies={['password']}
+              rules={[
+                { required: true, message: 'Type the password again' },
+                ({ getFieldValue }) => ({
+                  validator: (_, v) => (!v || v === getFieldValue('password') ? Promise.resolve() : Promise.reject(new Error("The two passwords don't match."))),
+                }),
+              ]}
+            >
+              <Input.Password autoComplete="new-password" />
+            </Form.Item>
+            <Button type="primary" htmlType="submit" loading={submitting} block>{welcome ? 'Next' : 'Save my new password'}</Button>
+          </Form>
+        </Shell>
+      );
+    }
     return (
       <Shell title="Set up your authenticator app again" subtitle={`Step 1 of 2. ${first ? `Hi ${first}. ` : ''}Type your PipeLine password so we know it's you.`}>
         {error && <Alert type="error" message={error} style={{ marginBottom: 16 }} />}
@@ -192,6 +257,27 @@ export default function Login() {
           </Form.Item>
           <Button type="primary" htmlType="submit" loading={submitting} block>Next</Button>
         </Form>
+        <Paragraph type="secondary" style={{ marginTop: 16, marginBottom: 0 }}>
+          Forgot your password? Use <a onClick={() => { navigate('/', { replace: true }); setStep('forgot'); }}>Forgot your password?</a> first, then come back to this email.
+        </Paragraph>
+      </Shell>
+    );
+  }
+
+  if (step === 'forgot') {
+    return (
+      <Shell title="Forgot your password?" subtitle="Type the email you sign in with. We'll email you a link to choose a new password.">
+        {error && <Alert type="error" message={error} style={{ marginBottom: 16 }} />}
+        <Form layout="vertical" onFinish={onForgot}>
+          <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email', message: 'Type the email address you sign in with.' }]}>
+            <Input autoFocus autoComplete="username" />
+          </Form.Item>
+          <Button type="primary" htmlType="submit" loading={submitting} block>Email me a link</Button>
+        </Form>
+        <Paragraph type="secondary" style={{ marginTop: 16, marginBottom: 8 }}>
+          You'll still need the 6-digit code from your authenticator app to sign in.
+        </Paragraph>
+        <a onClick={() => { setStep('password'); setError(null); }}>Back to sign in</a>
       </Shell>
     );
   }
@@ -199,6 +285,7 @@ export default function Login() {
   if (step === 'code') {
     return (
       <Shell title="Enter your code" subtitle="One more step. Open the authenticator app on your phone, find PipeLine, and type the 6-digit number it shows.">
+        {notice && <Alert type="success" message={notice} style={{ marginBottom: 16 }} />}
         <CodeForm button="Sign in" onDone={done} onRestart={restart} />
         <Paragraph type="secondary" style={{ marginTop: 16, marginBottom: 8 }}>
           The number changes every 30 seconds. That's normal: type the one showing now.
@@ -206,7 +293,7 @@ export default function Login() {
         <Paragraph type="secondary" style={{ marginBottom: 8 }}>
           Lost your phone, or got a new one? Ask a Super User to reset your authenticator. You'll get an email to set it up again.
         </Paragraph>
-        <a onClick={() => { setStep('password'); setError(null); }}>Back to sign in</a>
+        <a onClick={() => { setStep('password'); setError(null); setNotice(null); }}>Back to sign in</a>
       </Shell>
     );
   }
@@ -292,6 +379,9 @@ export default function Login() {
         </Form.Item>
         <Button type="primary" htmlType="submit" loading={submitting} block>Next</Button>
       </Form>
+      <Paragraph style={{ marginTop: 16, marginBottom: 0 }}>
+        <a onClick={() => { setStep('forgot'); setError(null); setNotice(null); }}>Forgot your password?</a>
+      </Paragraph>
     </Shell>
   );
 }

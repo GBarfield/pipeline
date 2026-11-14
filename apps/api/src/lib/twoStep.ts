@@ -15,19 +15,28 @@
 //   out everywhere (sessionVersion++) and emails a link. After a reset the
 //   new phone can only be set up through that link (password first), not
 //   with the password alone (totpNeedsLink).
+// - Emailed links (welcome / password / authenticator) are made here; the
+//   emails themselves are composed in userLinks.ts.
 import type { Response } from 'express';
 import QRCode from 'qrcode';
 import { prisma } from './prisma.ts';
 import { decrypt, encrypt, randomToken, sha256 } from './secretBox.ts';
 import { cleanCode, groupKey, matchStep, newSecret, otpauthUri } from './totp.ts';
-import { signSessionToken, SESSION_COOKIE } from './auth.ts';
-import { sendMail } from './mailer.ts';
+import { hashPassword, signSessionToken, verifyPassword, SESSION_COOKIE } from './auth.ts';
 
 export const PENDING_COOKIE = 'pipeline_pending';
 const PENDING_MINUTES = { verify: 10, enroll: 30 } as const;
 const MAX_FAILURES = 5;
 const LOCK_MINUTES = 15;
-export const LINK_HOURS = { authenticator: 7 * 24 };
+export type LinkKind = 'welcome' | 'password' | 'authenticator';
+/** How long each link works. A password link someone asked for themselves is short; one a Super User sends lasts a day. */
+export const LINK_HOURS = { welcome: 7 * 24, password: 1, adminPassword: 24, authenticator: 7 * 24 };
+
+/** Same rule as Translatus. */
+export function checkPassword(password: string) {
+  if (password.length < 12) throw new TwoStepError('Use a password of at least 12 characters.');
+  if (password.length > 200) throw new TwoStepError('That password is too long.');
+}
 const SESSION_MAX_AGE_MS = 12 * 60 * 60 * 1000; // matches the JWT's 12h
 
 export type Purpose = 'verify' | 'enroll';
@@ -176,78 +185,84 @@ export async function checkCode(res: Response, p: Pending, raw: string) {
   return startSession(res, p.userId);
 }
 
-// --- emailed authenticator links ---------------------------------------------------
+// --- emailed links ------------------------------------------------------------------
 
-export async function createLink(userId: number, kind: 'authenticator', createdById: number | null, hours: number) {
+export async function createLink(userId: number, kind: LinkKind, createdById: number | null, hours: number) {
   const token = randomToken();
   // One live link per person: a new one replaces any unused older one.
   await prisma.accountLink.deleteMany({ where: { userId, usedAt: null } });
   const expiresAt = new Date(Date.now() + hours * 3_600_000);
-  await prisma.accountLink.create({ data: { tokenHash: sha256(token), userId, kind, createdById, expiresAt } });
+  await prisma.accountLink.create({
+    data: {
+      tokenHash: sha256(token), userId, kind, createdById, expiresAt,
+      // Kept (encrypted) only for links a Super User sent, so the Users page can show it again.
+      tokenEnc: createdById !== null ? encrypt(Buffer.from(token, 'utf8')) : null,
+    },
+  });
   return { token, expiresAt };
 }
 
-export async function findLink(token: string) {
+export interface LinkInfo { userId: number; kind: LinkKind; email: string; name: string; expiresAt: Date; hasTotp: boolean }
+
+export async function findLink(token: string): Promise<LinkInfo | null> {
   if (!token || token.length > 200) return null;
   const l = await prisma.accountLink.findUnique({
     where: { tokenHash: sha256(token) },
-    include: { user: { select: { id: true, email: true, name: true, active: true } } },
+    include: { user: { select: { id: true, email: true, name: true, active: true, totpSecretEnc: true } } },
   });
   if (!l || l.usedAt || l.expiresAt <= new Date() || !l.user.active) return null;
-  return { userId: l.userId, kind: l.kind, email: l.user.email, name: l.user.name, expiresAt: l.expiresAt };
+  return { userId: l.userId, kind: l.kind as LinkKind, email: l.user.email, name: l.user.name, expiresAt: l.expiresAt, hasTotp: !!l.user.totpSecretEnc };
 }
 
-export async function markLinkUsed(token: string) {
-  await prisma.accountLink.update({ where: { tokenHash: sha256(token) }, data: { usedAt: new Date() } });
+async function markLinkUsed(token: string) {
+  await prisma.accountLink.update({ where: { tokenHash: sha256(token) }, data: { usedAt: new Date(), tokenEnc: null } });
+}
+
+/** A welcome or password link: sets the password, ends every session. */
+export async function usePasswordLink(token: string, password: string, confirm: string): Promise<LinkInfo> {
+  const link = await findLink(token);
+  if (!link || link.kind === 'authenticator') throw new TwoStepError('This link has expired or was already used.', 404);
+  checkPassword(password);
+  if (password !== confirm) throw new TwoStepError("The two passwords don't match. Type the same password in both boxes.");
+  await prisma.user.update({ where: { id: link.userId }, data: { passwordHash: await hashPassword(password) } });
+  await markLinkUsed(token);
+  await signOutEverywhere(link.userId);
+  return link;
+}
+
+/** An authenticator link: their current password, then a new QR code. */
+export async function useAuthenticatorLink(token: string, password: string): Promise<LinkInfo> {
+  const link = await findLink(token);
+  if (!link || link.kind !== 'authenticator') throw new TwoStepError('This link has expired or was already used.', 404);
+  const u = await prisma.user.findUnique({ where: { id: link.userId }, select: { passwordHash: true } });
+  if (!u?.passwordHash || !(await verifyPassword(password, u.passwordHash).catch(() => false))) {
+    throw new TwoStepError('That password isn\'t right. If you forgot it, use "Forgot your password?" on the sign-in page first, then come back to this email.', 401);
+  }
+  await markLinkUsed(token);
+  return link;
+}
+
+/** Unused links a Super User sent, for the Users page ("Copy link" when the email didn't arrive). */
+export async function openLinks(): Promise<Map<number, { kind: LinkKind; expiresAt: Date; url: string }>> {
+  const rows = await prisma.accountLink.findMany({
+    where: { usedAt: null, expiresAt: { gt: new Date() }, createdById: { not: null }, tokenEnc: { not: null } },
+    select: { userId: true, kind: true, expiresAt: true, tokenEnc: true },
+  });
+  return new Map(rows.map((r) => [r.userId, { kind: r.kind as LinkKind, expiresAt: r.expiresAt, url: linkUrl(decrypt(r.tokenEnc!).toString('utf8')) }]));
 }
 
 // --- admin: lost phone ----------------------------------------------------------------
 
-/**
- * Clears the authenticator, signs the person out everywhere and emails them a
- * link to connect a new phone. Returns the link too, so a Super User can pass
- * it on another way if the email doesn't arrive.
- */
-export async function resetAuthenticator(userId: number, actor: { id: number; name: string } | null) {
+/** Clears the authenticator and signs them out. The new one can only be set up from the emailed link (userLinks.resetAndEmail). */
+export async function resetAuthenticator(userId: number) {
   const u = await prisma.user.update({
     where: { id: userId },
     data: {
       totpSecretEnc: null, totpNewEnc: null, totpOnAt: null, totpLastStep: null,
       totpFailures: 0, totpLockedUntil: null, totpNeedsLink: true,
     },
-    select: { id: true, email: true, name: true },
+    select: { id: true, email: true },
   });
   await signOutEverywhere(userId);
-  const { token, expiresAt } = await createLink(userId, 'authenticator', actor?.id ?? null, LINK_HOURS.authenticator);
-  const url = linkUrl(token);
-  const until = expiresAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'America/Chicago' });
-  const first = u.name.split(' ')[0] || 'there';
-  const who = actor?.name ?? 'Your administrator';
-  let emailed = false;
-  try {
-    await sendMail({
-      to: { name: u.name, email: u.email },
-      replyTo: { name: 'PipeLine', email: process.env.RFQ_FROM_EMAIL ?? u.email },
-      subject: 'Set up your authenticator app for PipeLine again',
-      fromName: 'PipeLine',
-      attachments: [],
-      body: [
-        `Hello ${first},`,
-        `${who} reset the authenticator app for your PipeLine account, so you can connect a new phone. You have been signed out.`,
-        'Here is how:',
-        '1. On your phone, install an authenticator app if you need one (Google Authenticator or Microsoft Authenticator, free in the App Store or Google Play).',
-        '2. On a computer, open the link below and type your PipeLine password.',
-        '3. Scan the QR code it shows with the app, then type the 6-digit number the app shows.',
-        `Set up my authenticator app:\n${url}`,
-        `This link works once, until ${until}. If it stops working, ask ${who} to reset your authenticator again.`,
-        "Didn't expect this email? Tell your PipeLine administrator.",
-        '--\nPipeLine',
-      ].join('\n\n'),
-    });
-    emailed = true;
-  } catch (err) {
-    console.error(`[two-step] reset email to ${u.email} failed:`, (err as Error).message);
-  }
-  console.log(`[two-step] authenticator reset for user ${u.id} by ${actor ? `user ${actor.id}` : 'server command'}; emailed=${emailed}`);
-  return { email: u.email, emailed, url, expiresAt };
+  return u;
 }

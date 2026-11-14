@@ -9,7 +9,7 @@
 // Usage (from apps/api):  pnpm two-step:reset someone@benebloc.com
 import 'dotenv/config';
 import { prisma } from '../lib/prisma.ts';
-import { resetAuthenticator } from '../lib/twoStep.ts';
+import { resetAndEmail } from '../lib/userLinks.ts';
 
 async function main() {
   const email = (process.argv[2] ?? '').trim().toLowerCase();
@@ -17,7 +17,7 @@ async function main() {
   const u = await prisma.user.findUnique({ where: { email }, select: { id: true, active: true } });
   if (!u) throw new Error(`No user with email ${email}`);
   if (!u.active) throw new Error(`${email} is not active`);
-  const r = await resetAuthenticator(u.id, null);
+  const r = await resetAndEmail(null, u.id);
   console.log(`Reset the authenticator for ${r.email} and signed them out.`);
   console.log(r.emailed ? 'Emailed them the setup link.' : 'The email did NOT go out. Give them this link another way:');
   console.log(`Link (works once, until ${r.expiresAt.toISOString()}):\n${r.url}`);

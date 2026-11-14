@@ -1,15 +1,23 @@
 // Destination: apps/api/src/routes/users.ts
+//
+// Super User only. Passwords work like Translatus: a Super User never sets
+// or sees one. A new user gets a welcome email with a one-time link (choose
+// a password, then connect the authenticator app); "Send password link"
+// emails a new-password link; "Reset authenticator" is for a lost phone. See
+// lib/userLinks.ts and lib/twoStep.ts.
 import { Router, type Request, type Response } from 'express';
 import { prisma } from '../lib/prisma.ts';
-import { hashPassword } from '../lib/auth.ts';
 import { requireAuth, requireRole } from '../middleware/auth.ts';
-import { resetAuthenticator } from '../lib/twoStep.ts';
+import { openLinks, TwoStepError } from '../lib/twoStep.ts';
+import { resetAndEmail, sendPasswordLink, sendWelcome } from '../lib/userLinks.ts';
 
 const router = Router();
 
 router.use(requireAuth, requireRole('SUPER_USER'));
 
-// Never select passwordHash back out to the client.
+const EMAIL_RE = /^[^\s@<>()",;:]+@[^\s@<>()",;:]+\.[a-z]{2,}$/i;
+
+// Never select passwordHash or the authenticator key back out to the client.
 const SAFE_SELECT = {
   id: true,
   email: true,
@@ -19,40 +27,57 @@ const SAFE_SELECT = {
   restrictedDivisionId: true,
   active: true,
   lastLoginAt: true,
-  totpOnAt: true,       // two-step sign-in set up (never the key itself)
+  totpOnAt: true,       // two-step sign-in set up
   totpNeedsLink: true,  // reset, waiting for the emailed link
   totpLockedUntil: true,
   createdAt: true,
   updatedAt: true,
 } as const;
 
+const actorOf = (req: Request) => ({ id: req.user!.id, name: req.user!.name });
+
+function sendError(res: Response, err: unknown, fallback: string) {
+  if (err instanceof TwoStepError) return res.status(err.status).json({ error: err.message });
+  console.error(fallback, err);
+  return res.status(500).json({ error: fallback });
+}
+
 // GET /api/users?brokerId=5&role=BROKER_USER
+// Each user also gets hasPassword (false = never finished the welcome email)
+// and pendingLink (an unused link a Super User sent, to copy if the email
+// didn't arrive).
 router.get('/', async (req: Request, res: Response) => {
   const { brokerId, role } = req.query;
   try {
-    const users = await prisma.user.findMany({
-      where: {
-        ...(brokerId ? { brokerId: Number(brokerId) } : {}),
-        ...(role ? { role: String(role) as 'SUPER_USER' | 'BROKER_USER' } : {}),
-      },
-      select: SAFE_SELECT,
-      orderBy: { id: 'asc' },
-    });
-    res.json(users);
+    const [users, links] = await Promise.all([
+      prisma.user.findMany({
+        where: {
+          ...(brokerId ? { brokerId: Number(brokerId) } : {}),
+          ...(role ? { role: String(role) as 'SUPER_USER' | 'BROKER_USER' } : {}),
+        },
+        select: { ...SAFE_SELECT, passwordHash: true },
+        orderBy: { id: 'asc' },
+      }),
+      openLinks(),
+    ]);
+    res.json(users.map(({ passwordHash, ...u }) => ({ ...u, hasPassword: !!passwordHash, pendingLink: links.get(u.id) ?? null })));
   } catch (err) {
-    console.error('Failed to list users:', err);
-    res.status(500).json({ error: 'Failed to list users' });
+    sendError(res, err, 'Failed to list users');
   }
 });
 
 // POST /api/users
-// Body: { email, password, name, role, brokerId? } - brokerId required when role is BROKER_USER.
+// Body: { email, name, role, brokerId?, restrictedDivisionId? } - no password:
+// they choose one from the welcome email. Responds with the user plus
+// { emailed, url, expiresAt } for the welcome link.
 router.post('/', async (req: Request, res: Response) => {
-  const { email, password, name, role, brokerId, restrictedDivisionId } = req.body;
+  const { name, role, brokerId, restrictedDivisionId } = req.body ?? {};
+  const email = String(req.body?.email ?? '').trim().toLowerCase();
 
-  if (!email || !password || !name || !role) {
-    return res.status(400).json({ error: 'email, password, name, and role are required' });
+  if (!email || !name || !role) {
+    return res.status(400).json({ error: 'email, name, and role are required' });
   }
+  if (!EMAIL_RE.test(email)) return res.status(400).json({ error: 'Enter a valid email address.' });
   if (role !== 'SUPER_USER' && role !== 'BROKER_USER') {
     return res.status(400).json({ error: 'role must be SUPER_USER or BROKER_USER' });
   }
@@ -66,39 +91,50 @@ router.post('/', async (req: Request, res: Response) => {
   try {
     const user = await prisma.user.create({
       data: {
-        email: String(email).toLowerCase(),
-        passwordHash: await hashPassword(password),
-        name,
+        email,
+        passwordHash: null,
+        name: String(name).trim(),
         role,
         brokerId: role === 'BROKER_USER' ? Number(brokerId) : null,
         restrictedDivisionId: role === 'BROKER_USER' && restrictedDivisionId ? Number(restrictedDivisionId) : null,
       },
       select: SAFE_SELECT,
     });
-    res.status(201).json(user);
+    const link = await sendWelcome(actorOf(req), user.id);
+    res.status(201).json({ ...user, emailed: link.emailed, url: link.url, expiresAt: link.expiresAt });
   } catch (err: any) {
-    if (err.code === 'P2002') {
-      return res.status(409).json({ error: 'A user with that email already exists' });
+    if (err?.code === 'P2002') {
+      return res.status(409).json({ error: `${email} already has an account.` });
     }
-    console.error('Failed to create user:', err);
-    res.status(500).json({ error: 'Failed to create user' });
+    sendError(res, err, 'Failed to create user');
   }
 });
 
 // PATCH /api/users/:id
-// Supports: name, email, active (deactivate/reactivate), password (reset), restrictedDivisionId.
+// Supports: name, email, active (deactivate/reactivate), restrictedDivisionId.
+// Passwords are not set here: use "Send password link" (POST /:id/send-link).
 router.patch('/:id', async (req: Request, res: Response) => {
   const id = Number(req.params.id);
-  const { name, email, active, password, restrictedDivisionId } = req.body;
+  const { name, email, active, restrictedDivisionId } = req.body ?? {};
+
+  if (req.body?.password !== undefined) {
+    return res.status(400).json({ error: 'Passwords are chosen by the person. Use "Send password link" instead.' });
+  }
 
   try {
     const data: Record<string, unknown> = {};
     if (name !== undefined) data.name = name;
-    if (email !== undefined) data.email = String(email).toLowerCase();
-    if (active !== undefined) data.active = Boolean(active);
-    if (password) data.passwordHash = await hashPassword(password);
-    // A new password or deactivation signs the person out everywhere.
-    if (password || active === false) data.sessionVersion = { increment: 1 };
+    if (email !== undefined) {
+      const e = String(email).trim().toLowerCase();
+      if (!EMAIL_RE.test(e)) return res.status(400).json({ error: 'Enter a valid email address.' });
+      data.email = e;
+    }
+    if (active !== undefined) {
+      if (id === req.user!.id && !active) return res.status(400).json({ error: "You can't turn off your own account." });
+      data.active = Boolean(active);
+      // Turning someone off signs them out everywhere.
+      if (!active) data.sessionVersion = { increment: 1 };
+    }
 
     if (restrictedDivisionId !== undefined) {
       const target = await prisma.user.findUnique({ where: { id }, select: { role: true } });
@@ -115,33 +151,41 @@ router.patch('/:id', async (req: Request, res: Response) => {
     const user = await prisma.user.update({ where: { id }, data, select: SAFE_SELECT });
     res.json(user);
   } catch (err: any) {
-    if (err.code === 'P2002') {
+    if (err?.code === 'P2002') {
       return res.status(409).json({ error: 'A user with that email already exists' });
     }
-    console.error('Failed to update user:', err);
-    res.status(500).json({ error: 'Failed to update user' });
+    sendError(res, err, 'Failed to update user');
+  }
+});
+
+// POST /api/users/:id/send-link
+// Someone who never finished gets the welcome link again; otherwise a
+// new-password link (24 hours). Their authenticator doesn't change.
+router.post('/:id/send-link', async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(400).json({ error: 'Invalid user' });
+  try {
+    res.json(await sendPasswordLink(actorOf(req), id));
+  } catch (err) {
+    sendError(res, err, 'Failed to send the link');
   }
 });
 
 // POST /api/users/:id/reset-authenticator
 // Lost or new phone: clears their authenticator, signs them out everywhere and
-// emails a one-time link to connect a new phone (password first). The link is
-// also returned so it can be passed on another way if the email doesn't
-// arrive. You can't reset your own: another Super User has to (or, as a last
-// resort, the server command `pnpm two-step:reset <email>`).
+// emails a one-time link to connect a new phone (password first). You can't
+// reset your own: another Super User has to (or, as a last resort, the server
+// command `pnpm two-step:reset <email>`).
 router.post('/:id/reset-authenticator', async (req: Request, res: Response) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) return res.status(400).json({ error: 'Invalid user' });
-  if (id === req.user!.id) return res.status(400).json({ error: 'Another Super User has to reset your authenticator.' });
   try {
     const target = await prisma.user.findUnique({ where: { id }, select: { id: true, active: true } });
     if (!target) return res.status(404).json({ error: 'User not found' });
     if (!target.active) return res.status(400).json({ error: 'Turn this user back on (Active) first.' });
-    const r = await resetAuthenticator(id, { id: req.user!.id, name: req.user!.name });
-    res.json(r);
+    res.json(await resetAndEmail(actorOf(req), id));
   } catch (err) {
-    console.error('Failed to reset authenticator:', err);
-    res.status(500).json({ error: 'Failed to reset authenticator' });
+    sendError(res, err, 'Failed to reset authenticator');
   }
 });
 

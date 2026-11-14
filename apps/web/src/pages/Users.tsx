@@ -38,6 +38,39 @@ interface UserRow {
   totpOnAt: string | null;
   totpNeedsLink: boolean;
   totpLockedUntil: string | null;
+  // Accounts work like Translatus: people choose their own password from an
+  // emailed link. hasPassword=false: invited, hasn't finished the welcome email.
+  hasPassword: boolean;
+  // An unused link a Super User sent (to copy if the email didn't arrive).
+  pendingLink: { kind: 'welcome' | 'password' | 'authenticator'; expiresAt: string; url: string } | null;
+}
+
+interface LinkResult { email: string; emailed: boolean; kind?: string; url: string; expiresAt: string }
+
+const LINK_LABEL: Record<string, string> = {
+  welcome: 'welcome (set up account)',
+  password: 'new password',
+  authenticator: 'new authenticator app',
+};
+
+const longDate = (d: string) => new Date(d).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+
+// After a link goes out: whether the email went, and the link itself to copy.
+function showLink(title: string, r: LinkResult, what: string) {
+  Modal.info({
+    title,
+    width: 580,
+    content: (
+      <div>
+        <p>{r.emailed ? `We emailed ${r.email} ${what}.` : <strong>The email to {r.email} did not go out.</strong>}</p>
+        <p>{r.emailed ? 'If it doesn’t arrive, send them this link another way:' : 'Send them this link another way (it works once):'}</p>
+        <Typography.Paragraph copyable style={{ wordBreak: 'break-all', background: '#fafafa', padding: 8, borderRadius: 4 }}>
+          {r.url}
+        </Typography.Paragraph>
+        <p style={{ color: 'rgba(0,0,0,0.45)', marginBottom: 0 }}>Works once, until {longDate(r.expiresAt)}.</p>
+      </div>
+    ),
+  });
 }
 
 interface DivisionRow {
@@ -127,15 +160,12 @@ export default function Users() {
         body: JSON.stringify({
           name: values.name,
           email: values.email,
-          password: values.password,
           role: 'SUPER_USER',
         }),
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || 'Failed to create user');
-      }
-      message.success('Super User created');
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || 'Failed to create user');
+      showLink(`Super User added: ${body.email}`, body, 'a welcome link to choose a password and connect their phone');
       superForm.resetFields();
       setSuperModalOpen(false);
       loadAll();
@@ -156,7 +186,6 @@ export default function Users() {
         body: JSON.stringify({
           name: values.name,
           email: values.email,
-          password: values.password,
           role: 'BROKER_USER',
           brokerId: values.brokerId,
           // Omit the key entirely when left blank rather than sending null,
@@ -166,11 +195,9 @@ export default function Users() {
           ...(values.restrictedDivisionId ? { restrictedDivisionId: values.restrictedDivisionId } : {}),
         }),
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || 'Failed to create user');
-      }
-      message.success('Broker User created');
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || 'Failed to create user');
+      showLink(`Broker User added: ${body.email}`, body, 'a welcome link to choose a password and connect their phone');
       brokerForm.resetFields();
       setBrokerModalOpen(false);
       loadAll();
@@ -183,7 +210,7 @@ export default function Users() {
 
    function handleOpenEdit(user: UserRow) {
     setEditingUser(user);
-    editForm.setFieldsValue({ name: user.name, email: user.email, password: '' });
+    editForm.setFieldsValue({ name: user.name, email: user.email });
     setEditModalOpen(true);
   }
 
@@ -196,9 +223,6 @@ export default function Users() {
         name: values.name,
         email: values.email,
       };
-      if (values.password) {
-        body.password = values.password;
-      }
       const res = await fetch(`/api/users/${editingUser.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -229,22 +253,23 @@ export default function Users() {
       return;
     }
     loadAll();
-    Modal.info({
-      title: `Authenticator reset for ${body.email}`,
-      width: 560,
-      content: (
-        <div>
-          <p>They have been signed out. {body.emailed ? 'We emailed them a link to connect their new phone.' : <strong>The email did not go out.</strong>}</p>
-          <p>{body.emailed ? 'If it doesn’t arrive, send them this link another way.' : 'Send them this link another way (it works once):'}</p>
-          <Typography.Paragraph copyable style={{ wordBreak: 'break-all', background: '#fafafa', padding: 8, borderRadius: 4 }}>
-            {body.url}
-          </Typography.Paragraph>
-          <p style={{ color: 'rgba(0,0,0,0.45)', marginBottom: 0 }}>
-            Works once, until {new Date(body.expiresAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}. They’ll type their password, then scan a new QR code.
-          </p>
-        </div>
-      ),
-    });
+    showLink(`Authenticator reset for ${body.email}`, body, 'a link to connect their new phone. They have been signed out');
+  }
+
+  // A new-password link (or the welcome link again, if they never finished).
+  async function sendLink(user: UserRow) {
+    const res = await fetch(`/api/users/${user.id}/send-link`, { method: 'POST' });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      message.error(body.error || 'Failed to send the link');
+      return;
+    }
+    loadAll();
+    showLink(
+      body.kind === 'welcome' ? `Welcome link sent again to ${body.email}` : `Password link sent to ${body.email}`,
+      body,
+      body.kind === 'welcome' ? 'the welcome link again' : 'a link to choose a new password',
+    );
   }
 
   const columns: TableProps<UserRow>['columns'] = [
@@ -285,20 +310,35 @@ export default function Users() {
       dataIndex: 'active',
       key: 'active',
       render: (active: boolean, user: UserRow) => (
-        <Switch checked={active} onChange={(checked) => setActive(user, checked)} />
+        <Switch checked={active} disabled={user.id === me?.id} onChange={(checked) => setActive(user, checked)} />
       ),
     },
     {
-      title: 'Two-step',
-      key: 'twoStep',
+      title: 'Sign-in',
+      key: 'signIn',
       render: (_: unknown, user: UserRow) => {
         const locked = user.totpLockedUntil && new Date(user.totpLockedUntil) > new Date();
-        const tag = user.totpOnAt
-          ? <Tag color="green">On since {new Date(user.totpOnAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</Tag>
-          : user.totpNeedsLink
-            ? <Tag color="orange">Reset, waiting for link</Tag>
-            : <Tag>Not set up yet</Tag>;
-        return <>{tag}{locked && <Tag color="red">Locked (wrong codes)</Tag>}</>;
+        const tag = !user.hasPassword
+          ? <Tag color="blue">Invited, hasn't set up yet</Tag>
+          : user.totpOnAt
+            ? <Tag color="green">Two-step on since {new Date(user.totpOnAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</Tag>
+            : user.totpNeedsLink
+              ? <Tag color="orange">Authenticator reset, waiting</Tag>
+              : <Tag>Phone not connected yet</Tag>;
+        return (
+          <div>
+            {tag}
+            {locked && <Tag color="red">Locked (wrong codes)</Tag>}
+            {user.pendingLink && (
+              <div style={{ fontSize: 12, marginTop: 4 }}>
+                <Typography.Text type="secondary">
+                  Unused {LINK_LABEL[user.pendingLink.kind] ?? user.pendingLink.kind} link, until {longDate(user.pendingLink.expiresAt)}.{' '}
+                </Typography.Text>
+                <Typography.Text copyable={{ text: user.pendingLink.url, tooltips: ['Copy the link', 'Copied'] }}>Copy</Typography.Text>
+              </div>
+            )}
+          </div>
+        );
       },
     },
     {
@@ -309,6 +349,18 @@ export default function Users() {
           <Button size="small" onClick={() => handleOpenEdit(user)}>
             Edit
           </Button>
+          {user.id !== me?.id && user.active && (
+            <Popconfirm
+              title={user.hasPassword ? 'Email a new-password link?' : 'Send the welcome email again?'}
+              description={user.hasPassword
+                ? 'They choose a new password from the link (works 24 hours). Their authenticator app stays the same.'
+                : 'They haven’t finished setting up. This sends a new welcome link (works 7 days).'}
+              okText="Send"
+              onConfirm={() => sendLink(user)}
+            >
+              <Button size="small">{user.hasPassword ? 'Send password link' : 'Resend welcome'}</Button>
+            </Popconfirm>
+          )}
           {user.id !== me?.id && user.active && (user.totpOnAt || user.totpNeedsLink) && (
             <Popconfirm
               title="Reset this person's authenticator?"
@@ -360,13 +412,9 @@ export default function Users() {
           <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
             <Input />
           </Form.Item>
-          <Form.Item
-            name="password"
-            label="Password"
-            rules={[{ required: true, min: 8, message: 'At least 8 characters' }]}
-          >
-            <Input.Password />
-          </Form.Item>
+          <p style={{ color: 'rgba(0,0,0,0.45)' }}>
+            They'll get a welcome email with a link to choose their own password and connect the authenticator app on their phone.
+          </p>
         </Form>
       </Modal>
 
@@ -385,13 +433,9 @@ export default function Users() {
           <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
             <Input />
           </Form.Item>
-          <Form.Item
-            name="password"
-            label="Password"
-            rules={[{ required: true, min: 8, message: 'At least 8 characters' }]}
-          >
-            <Input.Password />
-          </Form.Item>
+          <p style={{ color: 'rgba(0,0,0,0.45)' }}>
+            They'll get a welcome email with a link to choose their own password and connect the authenticator app on their phone.
+          </p>
           <Form.Item
             name="brokerId"
             label="Broker"
@@ -435,14 +479,9 @@ export default function Users() {
           <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
             <Input />
           </Form.Item>
-          <Form.Item
-            name="password"
-            label="New Password"
-            tooltip="Leave blank to keep the current password."
-            rules={[{ min: 8, message: 'At least 8 characters' }]}
-          >
-            <Input.Password placeholder="Leave blank to keep current password" />
-          </Form.Item>
+          <p style={{ color: 'rgba(0,0,0,0.45)', marginBottom: 0 }}>
+            Passwords are chosen by the person. To give them a new one, use <strong>Send password link</strong> in the user list.
+          </p>
         </Form>
       </Modal>
     </div>

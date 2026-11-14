@@ -35,7 +35,7 @@ enum Role {
 model User {
   id           Int       @id @default(autoincrement())
   email        String    @unique
-  passwordHash String
+  passwordHash String?   // null until they choose one from the welcome email
   name         String
   role         Role
   active       Boolean   @default(true)
@@ -740,10 +740,17 @@ model PendingSignIn {
   @@index([userId])
 }
 
-// Emailed one-time links. kind "authenticator": set up a new phone after an
-// admin reset (password first, then the QR code).
+// Emailed one-time links, same as Translatus:
+//   welcome        new user: choose a password, then connect a phone (7 days)
+//   password       choose a new password (1 hour if they asked, 24 hours if a
+//                  Super User sent it); the authenticator stays as it was
+//   authenticator  after a reset: their password, then a new phone (7 days)
 model AccountLink {
   tokenHash   String    @id
+  // The link itself, encrypted, so a Super User can copy it again from the
+  // Users page while it's unused (if the email didn't arrive). Only for links
+  // a Super User sent; self-service "forgot password" links aren't kept.
+  tokenEnc    Bytes?
   userId      Int
   user        User      @relation("AccountLinkUser", fields: [userId], references: [id], onDelete: Cascade)
   kind        String
