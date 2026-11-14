@@ -117,7 +117,10 @@ export default function CommissionReconciliation() {
     // carrier name that isn't in the catalog yet can still be typed and
     // added directly - carrierName is free text on CensusEntry/
     // CommissionStatementEntry, never a hard FK.
-    fetch('/api/carriers').then((res) => res.json()).then(setCarriers);
+    // CARRIER,TPA: Employee Navigator election and census data names HSA/FSA
+    // administrators (WEX, HSA Bank, Surency...) as the carrier, so those
+    // TPA rows must stay pickable in this filter.
+    fetch('/api/carriers?type=CARRIER,TPA').then((res) => res.json()).then(setCarriers);
     loadFilters();
   }, []);
 

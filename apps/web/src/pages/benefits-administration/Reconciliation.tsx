@@ -59,7 +59,10 @@ export default function BenefitsAdministrationReconciliation() {
     fetch('/api/groups')
       .then((res) => res.json())
       .then((data: Group[]) => setGroups(data));
-    fetch('/api/carriers')
+    // CARRIER,TPA: Employee Navigator election and census data names HSA/FSA
+    // administrators (WEX, HSA Bank, Surency...) as the carrier, so those
+    // TPA rows must stay pickable in this filter.
+    fetch('/api/carriers?type=CARRIER,TPA')
       .then((res) => res.json())
       .then((data: Carrier[]) => setCarriers(data));
   }, []);
