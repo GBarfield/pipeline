@@ -54,10 +54,15 @@ export async function sendRfqEmail(opts: {
   subject: string;
   body: string;
   attachments: RfqEmailAttachment[];
+  // Display name on the From line; the address is always RFQ_FROM_EMAIL.
+  // Defaults to RFQ_FROM_NAME.
+  fromName?: string | null;
 }): Promise<{ transport: MailTransport; emailId: string | null }> {
+  const fromName = opts.fromName?.trim() || process.env.RFQ_FROM_NAME || null;
   if (mailTransport() === 'api') {
     const r = await sendEmail({
       to: opts.to,
+      from: { name: fromName, email: process.env.RFQ_FROM_EMAIL ?? '' },
       replyTo: opts.replyTo,
       subject: opts.subject,
       text: opts.body,
@@ -67,7 +72,7 @@ export async function sendRfqEmail(opts: {
   }
 
   await smtp().sendMail({
-    from: `"${process.env.RFQ_FROM_NAME}" <${process.env.RFQ_FROM_EMAIL}>`,
+    from: `"${(fromName ?? '').replace(/["<>\r\n]/g, '')}" <${process.env.RFQ_FROM_EMAIL}>`,
     replyTo: `"${opts.replyTo.name}" <${opts.replyTo.email}>`,
     to: `"${opts.to.name}" <${opts.to.email}>`,
     subject: opts.subject,

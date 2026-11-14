@@ -9,6 +9,7 @@ import {
   UserOutlined,
   LogoutOutlined,
   AuditOutlined,
+  MailOutlined,
 } from '@ant-design/icons';
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
@@ -28,6 +29,7 @@ import { DivisionProvider, useDivision, getDashboardPath } from './context/Divis
 import { DivisionSwitcher } from './components/DivisionSwitcher';
 import CommissionReconciliation from './pages/accounting/CommissionReconciliation';
 import BenefitsAdministrationReconciliation from './pages/benefits-administration/Reconciliation';
+import CarrierCommunication from './pages/benefits-administration/CarrierCommunication';
 
 const { Sider, Content, Header } = Layout;
 
@@ -68,6 +70,12 @@ function buildMenuItems(divisionKey: string | null): MenuEntry[] {
       key: '/benefits-administration/reconciliation',
       icon: <AuditOutlined />,
       label: <Link to="/benefits-administration/reconciliation">Reconciliation</Link>,
+      divisions: ['BENEFITS_ADMINISTRATION'],
+    },
+    {
+      key: '/benefits-administration/carrier-communication',
+      icon: <MailOutlined />,
+      label: <Link to="/benefits-administration/carrier-communication">Carrier Communication</Link>,
       divisions: ['BENEFITS_ADMINISTRATION'],
     },
     { key: '/triage', icon: <ExperimentOutlined />, label: <Link to="/triage">Triage</Link> },
@@ -156,6 +164,7 @@ function Shell({ user }: { user: AuthUser }) {
             <Route path="/databases/groups" element={<Groups />} />
             <Route path="/accounting/commission-reconciliation" element={<CommissionReconciliation />} />
             <Route path="/benefits-administration/reconciliation" element={<BenefitsAdministrationReconciliation />} />
+            <Route path="/benefits-administration/carrier-communication" element={<CarrierCommunication />} />
             <Route path="/triage" element={<Triage />} />
             {user.role === 'SUPER_USER' && <Route path="/users" element={<Users />} />}
             <Route path="/settings" element={<Settings />} />

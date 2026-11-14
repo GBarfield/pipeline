@@ -54,6 +54,9 @@ model User {
 
   sentGroupProposals GroupProposal[]
   groupProposalNotes GroupProposalNote[]
+
+  messageTemplates MessageTemplate[]
+  carrierMessages  CarrierMessage[]
 }
 
 model Carrier {
@@ -79,6 +82,7 @@ model Carrier {
   groups   Group[]
   contacts CarrierContact[]
   rfqs     Rfq[]
+  messages CarrierMessage[]
 
   @@index([partnerType])
 }
@@ -269,6 +273,7 @@ model Group {
   commissionStatementEntries CommissionStatementEntry[]
   benefitsDocumentEntries BenefitsDocumentEntry[]
   contacts GroupContact[]
+  carrierMessages CarrierMessage[]
 }
 
 model Product {
@@ -370,6 +375,7 @@ model Division {
   restrictedUsers User[]
   benefitsDocumentUploads BenefitsDocumentUpload[]
   benefitsDocumentEntries BenefitsDocumentEntry[]
+  carrierMessages CarrierMessage[]
 }
 
 // Singleton row (id is always 1) holding app-wide settings that aren't scoped to any one user.
@@ -523,6 +529,7 @@ model CarrierContact {
   updatedAt DateTime @updatedAt
 
   rfqs      Rfq[]
+  messageRecipients CarrierMessageRecipient[]
 }
 
 model Rfq {
@@ -624,4 +631,78 @@ model GroupProposalNote {
   author          User          @relation(fields: [authorId], references: [id])
   note            String        @db.Text
   createdAt       DateTime      @default(now())
+}
+
+// --- Carrier Communication (Benefits Administration), added 2026-11-14 ---
+// Free-form or canned emails from Benefits Administration to one, several
+// or all CarrierContacts of a Carrier/TPA. One CarrierMessage per send
+// (what the user wrote, with {{placeholders}}), one CarrierMessageRecipient
+// per contact (the rendered email actually sent, its SMTP2GO email_id and
+// status). See routes/carrierCommunication.ts.
+
+// Reusable "canned" message. Shared by all users; edited by its creator or
+// a Super User. Soft-deleted via active=false so old messages keep their link.
+model MessageTemplate {
+  id          Int      @id @default(autoincrement())
+  name        String
+  subject     String
+  body        String   @db.Text
+  active      Boolean  @default(true)
+  createdById Int?
+  createdBy   User?    @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  messages CarrierMessage[]
+}
+
+model CarrierMessage {
+  id           Int      @id @default(autoincrement())
+  carrierId    Int
+  carrier      Carrier  @relation(fields: [carrierId], references: [id])
+  groupId      Int?
+  group        Group?   @relation(fields: [groupId], references: [id])
+  templateId   Int?
+  template     MessageTemplate? @relation(fields: [templateId], references: [id])
+  divisionId   Int
+  division     Division @relation(fields: [divisionId], references: [id])
+  // As written, placeholders not yet filled in.
+  subject      String
+  body         String   @db.Text
+  sentByUserId Int
+  sentByUser   User     @relation(fields: [sentByUserId], references: [id])
+  // Sender's broker at send time, for Broker User scoping of the history.
+  brokerId     Int?
+  createdAt    DateTime @default(now())
+
+  recipients CarrierMessageRecipient[]
+
+  @@index([carrierId])
+  @@index([createdAt])
+}
+
+model CarrierMessageRecipient {
+  id               Int             @id @default(autoincrement())
+  messageId        Int
+  message          CarrierMessage  @relation(fields: [messageId], references: [id])
+  carrierContactId Int?
+  carrierContact   CarrierContact? @relation(fields: [carrierContactId], references: [id])
+  toEmail          String
+  toName           String?
+  // Rendered for this recipient (placeholders filled in).
+  subject          String
+  body             String          @db.Text
+  // sent | failed. Room for delivered/bounced/rejected/spam once an SMTP2GO
+  // webhook is added (matched on providerId + toEmail, as in Translatus).
+  status           String          @default("sending")
+  transport        String?         // api | smtp
+  providerId       String?         // SMTP2GO email_id (API transport only)
+  error            String?
+  sentAt           DateTime?
+  eventAt          DateTime?
+  eventDetail      String?
+  createdAt        DateTime        @default(now())
+
+  @@index([messageId])
+  @@index([providerId])
 }
