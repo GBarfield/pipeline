@@ -163,6 +163,7 @@ router.post('/:id/send', async (req: Request, res: Response) => {
     await sendRfqEmail({
       to: { name: rfq.carrierContact.name, email: rfq.carrierContact.email },
       replyTo: { name: req.user!.name, email: req.user!.email },
+      sentBy: { name: req.user!.name, email: req.user!.email }, // From = the user (see mailer.ts fromForSender)
       subject: rfq.subject,
       body: finalBody,
       attachments: rfq.attachments.map((a) => ({ filename: a.fileName, path: a.filePath })),

@@ -208,6 +208,7 @@ router.post('/:id/send', async (req: Request, res: Response) => {
     await sendMail({
       to: { name: proposal.groupContact.name, email: proposal.groupContact.email },
       replyTo: { name: req.user!.name, email: req.user!.email },
+      sentBy: { name: req.user!.name, email: req.user!.email }, // From = the user (see mailer.ts fromForSender)
       subject: proposal.subject,
       body: finalBody,
       attachments: proposal.attachments.map((a) => ({ filename: a.fileName, path: a.filePath })),

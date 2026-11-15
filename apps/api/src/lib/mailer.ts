@@ -24,6 +24,36 @@ interface RfqEmailAttachment {
 
 export type MailTransport = 'api' | 'smtp';
 
+// --- who an email is "from" ------------------------------------------------------
+//
+// Emails a person sends from PipeLine (RFQs, Group Proposals, Carrier
+// Communication) pass `sentBy`. Rule, per Gregg 2026-11-15:
+//   - sender on a verified domain (benebloc.com): From is the person,
+//     "Pat Smith" <pat@benebloc.com>, and replies go straight to them.
+//   - anyone else (e.g. a broker user with their own company's address):
+//     From is "Pat Smith via BeneBloc" <system address>, Reply-To is the
+//     person. Sending *as* an unverified domain would be rejected or land in
+//     spam, since SMTP2GO can only sign mail for verified domains.
+// Settings (apps/api/.env):
+//   VERIFIED_SENDER_DOMAINS  comma list, default "benebloc.com"
+//   SENDER_VIA_NAME          default "BeneBloc"
+//   system address           ACCOUNT_FROM_EMAIL, else RFQ_FROM_EMAIL
+export function verifiedSenderDomains(): string[] {
+  return (process.env.VERIFIED_SENDER_DOMAINS ?? 'benebloc.com')
+    .split(',').map((d) => d.trim().toLowerCase()).filter(Boolean);
+}
+
+export function systemFromEmail(): string {
+  return process.env.ACCOUNT_FROM_EMAIL?.trim() || process.env.RFQ_FROM_EMAIL?.trim() || '';
+}
+
+export function fromForSender(sentBy: EmailAddress): EmailAddress {
+  const email = sentBy.email.trim();
+  const domain = email.split('@')[1]?.toLowerCase() ?? '';
+  if (verifiedSenderDomains().includes(domain)) return { name: sentBy.name, email };
+  return { name: `${sentBy.name} via ${process.env.SENDER_VIA_NAME?.trim() || 'BeneBloc'}`, email: systemFromEmail() };
+}
+
 export function mailTransport(): MailTransport {
   const forced = process.env.MAIL_TRANSPORT?.trim().toLowerCase();
   if (forced === 'api' || forced === 'smtp') return forced;
@@ -54,15 +84,21 @@ export async function sendRfqEmail(opts: {
   subject: string;
   body: string;
   attachments: RfqEmailAttachment[];
-  // Display name on the From line; the address is always RFQ_FROM_EMAIL.
-  // Defaults to RFQ_FROM_NAME.
+  // From line. Defaults to RFQ_FROM_NAME <RFQ_FROM_EMAIL>. Any address on a
+  // domain verified in SMTP2GO works (benebloc.com is verified).
   fromName?: string | null;
+  fromEmail?: string | null;
+  // The PipeLine user sending it. When set, From follows fromForSender()
+  // above and fromName/fromEmail are ignored.
+  sentBy?: EmailAddress | null;
 }): Promise<{ transport: MailTransport; emailId: string | null }> {
-  const fromName = opts.fromName?.trim() || process.env.RFQ_FROM_NAME || null;
+  const sender = opts.sentBy ? fromForSender(opts.sentBy) : null;
+  const fromName = sender?.name ?? (opts.fromName?.trim() || process.env.RFQ_FROM_NAME || null);
+  const fromEmail = sender?.email ?? (opts.fromEmail?.trim() || process.env.RFQ_FROM_EMAIL || '');
   if (mailTransport() === 'api') {
     const r = await sendEmail({
       to: opts.to,
-      from: { name: fromName, email: process.env.RFQ_FROM_EMAIL ?? '' },
+      from: { name: fromName, email: fromEmail },
       replyTo: opts.replyTo,
       subject: opts.subject,
       text: opts.body,
@@ -72,7 +108,7 @@ export async function sendRfqEmail(opts: {
   }
 
   await smtp().sendMail({
-    from: `"${(fromName ?? '').replace(/["<>\r\n]/g, '')}" <${process.env.RFQ_FROM_EMAIL}>`,
+    from: `"${(fromName ?? '').replace(/["<>\r\n]/g, '')}" <${fromEmail}>`,
     replyTo: `"${opts.replyTo.name}" <${opts.replyTo.email}>`,
     to: `"${opts.to.name}" <${opts.to.email}>`,
     subject: opts.subject,

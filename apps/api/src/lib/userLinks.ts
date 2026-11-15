@@ -9,6 +9,13 @@
 // Emails go out right away through lib/mailer.ts (SMTP2GO). If one can't be
 // sent, emailed=false and the Users page shows the link to pass on another
 // way.
+//
+// Sender (apps/api/.env), separate from the RFQ sender:
+//   ACCOUNT_FROM_EMAIL  e.g. info@benebloc.com. Default: RFQ_FROM_EMAIL.
+//   ACCOUNT_FROM_NAME   default "PipeLine".
+//   ACCOUNT_REPLY_TO    where replies go. Default: ACCOUNT_FROM_EMAIL. Set it
+//                       to a real inbox if the From address has no mailbox.
+// Any address on benebloc.com works: the whole domain is verified in SMTP2GO.
 import { prisma } from './prisma.ts';
 import { sendMail } from './mailer.ts';
 import {
@@ -110,11 +117,15 @@ async function emailLink(actor: Actor | null, userId: number, kind: LinkKind, to
     });
   }
 
+  const fromEmail = process.env.ACCOUNT_FROM_EMAIL?.trim() || process.env.RFQ_FROM_EMAIL?.trim() || '';
+  const fromName = process.env.ACCOUNT_FROM_NAME?.trim() || 'PipeLine';
+  const replyTo = process.env.ACCOUNT_REPLY_TO?.trim() || fromEmail;
   try {
     await sendMail({
       to: { name: u.name, email: u.email },
-      replyTo: { name: 'PipeLine', email: process.env.RFQ_FROM_EMAIL ?? u.email },
-      fromName: 'PipeLine',
+      replyTo: { name: fromName, email: replyTo },
+      fromName,
+      fromEmail,
       subject,
       body,
       attachments: [],

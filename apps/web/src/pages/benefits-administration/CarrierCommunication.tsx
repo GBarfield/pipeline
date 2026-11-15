@@ -438,7 +438,7 @@ function SendTab({
           <Space wrap>
             <Popconfirm
               title={`Send ${uniqueCount} email${uniqueCount === 1 ? '' : 's'} to ${carrier?.name ?? ''}?`}
-              description="Each contact gets their own copy. Replies come to your email."
+              description="Each contact gets their own copy, from you. Replies come to your email."
               okText="Send"
               onConfirm={send}
               disabled={!canSend}
@@ -474,7 +474,14 @@ function SendTab({
               {recipients.length > 1 && <Text type="secondary"> and {recipients.length - 1} more, each sent separately</Text>}
             </Paragraph>
             <Paragraph style={{ marginBottom: 4 }}>
-              <Text type="secondary">Reply-To: </Text>{user?.name} &lt;{user?.email}&gt;
+              <Text type="secondary">From: </Text>
+              {/* Same rule as apps/api/src/lib/mailer.ts fromForSender (benebloc.com is the verified domain). */}
+              {user?.email?.toLowerCase().endsWith('@benebloc.com')
+                ? <>{user.name} &lt;{user.email}&gt;</>
+                : <>{user?.name} via BeneBloc</>}
+            </Paragraph>
+            <Paragraph style={{ marginBottom: 4 }}>
+              <Text type="secondary">Replies go to: </Text>{user?.name} &lt;{user?.email}&gt;
             </Paragraph>
             <Paragraph strong style={{ marginBottom: 12 }}>
               <Text type="secondary" strong={false}>Subject: </Text>{preview.subject}

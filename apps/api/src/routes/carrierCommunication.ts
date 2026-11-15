@@ -19,8 +19,9 @@
 //
 // Sending: one email per contact (so each is personalized and tracked on its
 // own), synchronously, through lib/mailer.ts (SMTP2GO API when configured).
-// From: CARRIER_COMM_FROM_NAME (else RFQ_FROM_NAME) <RFQ_FROM_EMAIL>;
-// Reply-To: the user who sent it, so replies land in their own inbox.
+// From: the user who sent it when they have a benebloc.com address, else
+// "Name via BeneBloc" <system address> (see mailer.ts fromForSender).
+// Reply-To: always the user who sent it, so replies land in their own inbox.
 //
 // Access: any signed-in user, except one restricted to a division other
 // than Benefits Administration. A Broker User can only attach a group of
@@ -264,7 +265,6 @@ router.post('/messages', async (req, res) => {
       },
     });
 
-    const fromName = process.env.CARRIER_COMM_FROM_NAME?.trim() || null;
     let sent = 0;
     const failures: { email: string; error: string }[] = [];
 
@@ -286,10 +286,10 @@ router.post('/messages', async (req, res) => {
         const r = await sendMail({
           to: { name: c.name, email: c.email.trim() },
           replyTo: { name: req.user!.name, email: req.user!.email },
+      sentBy: { name: req.user!.name, email: req.user!.email }, // From = the user (see mailer.ts fromForSender)
           subject: rSubject,
           body: rBody,
           attachments: [],
-          fromName,
         });
         await prisma.carrierMessageRecipient.update({
           where: { id: rec.id },
