@@ -39,7 +39,32 @@ interface MenuEntry {
   label: ReactNode;
   roles?: AuthUser['role'][]; // omit = visible to every logged-in role
   divisions?: string[]; // omit = visible in every division; otherwise a list of Division.key values
+  beta?: boolean; // shows a small "Beta" pill after the label: usable, but still being finished
   children?: MenuEntry[];
+}
+
+// Small pill after a menu label for features that are usable but not finished.
+// Remove `beta: true` from the menu entry once the feature is ready.
+function BetaPill() {
+  return (
+    <span
+      style={{
+        marginLeft: 8,
+        padding: '0 6px',
+        fontSize: 10,
+        lineHeight: '16px',
+        fontWeight: 600,
+        letterSpacing: 0.4,
+        textTransform: 'uppercase',
+        color: '#ffd666',
+        border: '1px solid rgba(255, 214, 102, 0.6)',
+        borderRadius: 8,
+        verticalAlign: 'middle',
+      }}
+    >
+      Beta
+    </span>
+  );
 }
 
 // The Dashboard entry's target depends on which division is active, so the
@@ -65,12 +90,14 @@ function buildMenuItems(divisionKey: string | null): MenuEntry[] {
       icon: <AuditOutlined />,
       label: <Link to="/accounting/commission-reconciliation">Commission Reconciliation</Link>,
       divisions: ['ACCOUNTING'],
+      beta: true,
     },
     {
       key: '/benefits-administration/reconciliation',
       icon: <AuditOutlined />,
       label: <Link to="/benefits-administration/reconciliation">Reconciliation</Link>,
       divisions: ['BENEFITS_ADMINISTRATION'],
+      beta: true,
     },
     {
       key: '/benefits-administration/carrier-communication',
@@ -78,7 +105,7 @@ function buildMenuItems(divisionKey: string | null): MenuEntry[] {
       label: <Link to="/benefits-administration/carrier-communication">Carrier Communication</Link>,
       divisions: ['BENEFITS_ADMINISTRATION'],
     },
-    { key: '/triage', icon: <ExperimentOutlined />, label: <Link to="/triage">Triage</Link> },
+    { key: '/triage', icon: <ExperimentOutlined />, label: <Link to="/triage">Triage</Link>, beta: true },
     { key: '/users', icon: <TeamOutlined />, label: <Link to="/users">Users</Link>, roles: ['SUPER_USER'] },
     { key: '/settings', icon: <SettingOutlined />, label: <Link to="/settings">Settings</Link> },
   ];
@@ -88,7 +115,11 @@ function filterMenu(items: MenuEntry[], role: AuthUser['role'], divisionKey: str
   return items
     .filter((item) => !item.roles || item.roles.includes(role))
     .filter((item) => !item.divisions || (divisionKey !== null && item.divisions.includes(divisionKey)))
-    .map((item) => (item.children ? { ...item, children: filterMenu(item.children, role, divisionKey) } : item));
+    .map(({ beta, ...item }) => ({
+      ...item,
+      ...(beta ? { label: <>{item.label}<BetaPill /></> } : {}),
+      ...(item.children ? { children: filterMenu(item.children, role, divisionKey) } : {}),
+    }));
 }
 
 // Landing target for "/" - always sends the user on to whichever division's
