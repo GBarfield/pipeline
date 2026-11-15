@@ -186,6 +186,9 @@ function SendTab({
   const [saveOpen, setSaveOpen] = useState(false);
   const [groupSearch, setGroupSearch] = useState('');
   const [addingGroup, setAddingGroup] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactSaving, setContactSaving] = useState(false);
+  const [contactForm] = Form.useForm();
 
   useEffect(() => {
     api<Carrier[]>(`${API_ROOT}/api/carriers?type=CARRIER,TPA`).then(setCarriers).catch(() => message.error('Could not load carriers'));
@@ -294,6 +297,37 @@ function SendTab({
     }
   };
 
+  // "+ Add contact": saves a new contact on this carrier (same as Databases →
+  // Carriers → Contacts; any role may) and ticks it for this message.
+  const saveContact = async () => {
+    const values = await contactForm.validateFields();
+    setContactSaving(true);
+    try {
+      const res = await fetch(`${API_ROOT}/api/carriers/${carrierId}/contacts`, jsonInit('POST', values));
+      const body = await res.json().catch(() => ({}));
+      if (res.status === 409 && body.contact) {
+        // Already on file: just pick it.
+        const c = body.contact as Contact;
+        if (mode === 'some') setPicked((p) => (p.includes(c.id) ? p : [...p, c.id]));
+        message.info(body.error);
+        setContactOpen(false);
+        contactForm.resetFields();
+        return;
+      }
+      if (!res.ok) throw new Error(body.error || 'Could not add the contact');
+      const c = body as Contact;
+      setContacts((list) => [...list, c].sort((a, b) => a.name.localeCompare(b.name)));
+      if (mode === 'some') setPicked((p) => [...p, c.id]);
+      message.success(`${c.name} added to ${carrier?.name ?? 'this carrier'}`);
+      setContactOpen(false);
+      contactForm.resetFields();
+    } catch (e) {
+      message.error((e as Error).message);
+    } finally {
+      setContactSaving(false);
+    }
+  };
+
   const canSend = !!carrierId && recipients.length > 0 && subject.trim() !== '' && body.trim() !== '';
 
   const send = async () => {
@@ -348,7 +382,8 @@ function SendTab({
                   type="warning"
                   showIcon
                   message="No contacts on file for this company"
-                  description="Add contacts under Databases → Carriers (or TPAs & Vendors), in the Contacts section of the company."
+                  description="Add one here and it's saved to the company for next time."
+                  action={<Button size="small" type="primary" onClick={() => setContactOpen(true)}>+ Add contact</Button>}
                 />
               ) : (
                 <Space direction="vertical" style={{ width: '100%' }}>
@@ -369,6 +404,7 @@ function SendTab({
                       </Checkbox>
                     ))}
                   </Checkbox.Group>
+                  <Button size="small" onClick={() => setContactOpen(true)}>+ Add contact</Button>
                 </Space>
               )}
             </Form.Item>
@@ -492,6 +528,34 @@ function SendTab({
           </div>
         )}
       </Card>
+
+      <Modal
+        open={contactOpen}
+        title={`Add a contact for ${carrier?.name ?? ''}`}
+        okText="Add contact"
+        confirmLoading={contactSaving}
+        onOk={saveContact}
+        onCancel={() => { setContactOpen(false); contactForm.resetFields(); }}
+        destroyOnHidden
+      >
+        <Form form={contactForm} layout="vertical" preserve={false}>
+          <Form.Item name="name" label="Name (a person or a team)" rules={[{ required: true, message: 'Name is required' }]}>
+            <Input autoFocus placeholder="e.g. Jane Smith, or Aetna Billing" maxLength={120} />
+          </Form.Item>
+          <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Email is required' }, { type: 'email', message: 'Enter a valid email address' }]}>
+            <Input maxLength={200} />
+          </Form.Item>
+          <Form.Item name="title" label="Title / what they handle (optional)">
+            <Input placeholder="e.g. Billing questions, Account Manager" maxLength={200} />
+          </Form.Item>
+          <Form.Item name="phone" label="Phone (optional)">
+            <Input maxLength={40} />
+          </Form.Item>
+        </Form>
+        <Text type="secondary" style={{ fontSize: 12 }}>
+          Saved to this company's contacts (Databases → Carriers / TPAs &amp; Vendors), so it's there next time too.
+        </Text>
+      </Modal>
 
       <TemplateModal
         open={saveOpen}
