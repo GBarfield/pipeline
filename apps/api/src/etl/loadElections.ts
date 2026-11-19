@@ -94,9 +94,19 @@ export async function runLoadElections(): Promise<LoadElectionsSummary | null> {
     throw new Error(`Input directory does not exist: ${config.inputDir}`);
   }
 
-  const files = fs
+  // Chrome downloads straight into this folder. A file still named "AdHocReport..." was never renamed to
+  // its company: either Pipeline's rename failed, or it's a Translatus report (the Translatus ENav robot
+  // uses the same browser and moves its files out within seconds). Never load those - they'd create a junk
+  // "AdHocReport_..." group, and a Translatus report carries SSNs for another purpose.
+  const allCsv = fs
     .readdirSync(config.inputDir)
-    .filter((f) => f.toLowerCase().endsWith(".csv"))
+    .filter((f) => f.toLowerCase().endsWith(".csv"));
+  const unrenamed = allCsv.filter((f) => /^adhocreport/i.test(f));
+  if (unrenamed.length) {
+    logGate(`SKIPPED ${unrenamed.length} file(s) never renamed to a company (left in place): ${unrenamed.join(", ")}`);
+  }
+  const files = allCsv
+    .filter((f) => !/^adhocreport/i.test(f))
     .map((f) => path.join(config.inputDir, f));
 
   console.log(`[${batchId}] Found ${files.length} CSV file(s) in ${config.inputDir}${config.dryRun ? " (DRY RUN)" : ""}`);
